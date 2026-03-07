@@ -44,10 +44,12 @@ nav:
       - Model class selection: examples/model_comparison.md
       - Model averaging (BMA): examples/model_averaging.md
       - Diagnostics & multi-chain: examples/diagnostics.md
+      - Modal likelihood (MAC): examples/modal.md
   - API Reference:
       - Problem: api/problem.md
       - Result: api/result.md
       - GaussianNoiseLikelihood: api/noise.md
+      - ModalLikelihood: api/modal.md
       - HierarchicalProblem: api/hierarchical.md
       - Model comparison: api/model_comparison.md
       - Diagnostics: api/diagnostics.md

@@ -1,6 +1,7 @@
 from .core.problem import Problem
 from .core.result import Result, PosteriorPredictive
 from .core.noise import GaussianNoiseLikelihood
+from .core.modal import ModalLikelihood, mac_matrix
 from .core.hierarchical import HierarchicalProblem
 from .core.model_comparison import bayes_factor, ModelComparison, BMAResult
 from .core.diagnostics import ess, autocorr, gelman_rubin, convergence_summary
@@ -15,7 +16,7 @@ from .samplers.gibbs import Gibbs
 
 __all__ = [
     "Problem", "Result", "PosteriorPredictive",
-    "GaussianNoiseLikelihood", "HierarchicalProblem",
+    "GaussianNoiseLikelihood", "ModalLikelihood", "mac_matrix", "HierarchicalProblem",
     "bayes_factor", "ModelComparison", "BMAResult",
     "ess", "autocorr", "gelman_rubin", "convergence_summary",
     "MultiChainResult", "run_chains",
