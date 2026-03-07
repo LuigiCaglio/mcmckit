@@ -98,3 +98,5 @@ print(diag["warnings"])     # list of strings
 
 ESS > 400 per parameter is generally sufficient for stable posterior summaries.
 For tail quantiles or credible intervals, aim for ESS > 1000.
+
+See the full runnable script at `examples/diagnostics_multichain.py`.
