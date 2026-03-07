@@ -22,6 +22,23 @@ def _kde1d(x, grid_size=200):
     return xi, kde(xi)
 
 
+def _subsample_indices(n_total, n_eval):
+    """Return sorted indices for subsampling posterior samples.
+
+    Currently: uniform random subsampling without replacement.
+
+    EXTENSION POINT — swap this function to use a smarter strategy for
+    expensive forward models, e.g.:
+      - LHS-based stratification over the posterior CDF
+      - Systematic resampling (divide chain into n_eval equal segments)
+      - Importance resampling (weight by posterior density)
+    All return the same contract: a sorted int array of length <= n_total.
+    """
+    if n_eval is None or n_eval >= n_total:
+        return np.arange(n_total)
+    return np.sort(np.random.choice(n_total, size=n_eval, replace=False))
+
+
 class Result:
     """Container for posterior samples produced by a sampler.
 
@@ -264,6 +281,34 @@ class Result:
         return fig
 
     # ------------------------------------------------------------------
+    # Posterior predictive
+    # ------------------------------------------------------------------
+
+    def posterior_predictive(self, forward_model, n_eval=None):
+        """Evaluate the forward model at posterior samples.
+
+        Parameters
+        ----------
+        forward_model : callable
+            ``f(theta) -> array-like, shape (n_obs,)``.
+        n_eval : int, optional
+            Number of posterior samples to evaluate.  ``None`` (default)
+            evaluates all samples.  For expensive forward models (e.g. FEM),
+            use a smaller ``n_eval`` — see ``_subsample_indices`` for the
+            extension point to plug in smarter sampling strategies.
+
+        Returns
+        -------
+        PosteriorPredictive
+        """
+        idx = _subsample_indices(len(self.samples), n_eval)
+        theta_sub = self.samples[idx]
+        preds = np.array([np.asarray(forward_model(t), dtype=float).ravel()
+                          for t in theta_sub])
+        return PosteriorPredictive(preds, theta_sub,
+                                   param_names=self.param_names)
+
+    # ------------------------------------------------------------------
     # Dunder
     # ------------------------------------------------------------------
 
@@ -271,3 +316,110 @@ class Result:
         n, d = self.samples.shape
         ar = f", acceptance_rate={self.acceptance_rate:.3f}" if self.acceptance_rate is not None else ""
         return f"Result(n_samples={n}, n_params={d}{ar})"
+
+
+class PosteriorPredictive:
+    """Container for posterior predictive samples from a forward model.
+
+    Produced by :meth:`Result.posterior_predictive`.
+
+    Parameters
+    ----------
+    predictions : np.ndarray, shape (n_eval, n_obs)
+        Forward model outputs at each sampled theta.
+    theta : np.ndarray, shape (n_eval, n_params)
+        The posterior samples used to compute the predictions.
+    param_names : list of str, optional
+    """
+
+    def __init__(self, predictions, theta, param_names=None):
+        self.predictions = np.asarray(predictions)
+        self.theta = np.asarray(theta)
+        self.param_names = param_names
+
+    def mean(self):
+        """Pointwise mean of predictions, shape (n_obs,)."""
+        return np.mean(self.predictions, axis=0)
+
+    def std(self):
+        """Pointwise std of predictions, shape (n_obs,)."""
+        return np.std(self.predictions, axis=0)
+
+    def quantile(self, q):
+        """Pointwise quantile(s) of predictions.
+
+        Parameters
+        ----------
+        q : float or array-like
+            Quantile(s) in [0, 1].
+
+        Returns
+        -------
+        np.ndarray, shape (n_obs,) or (len(q), n_obs)
+        """
+        return np.quantile(self.predictions, q, axis=0)
+
+    def plot_bands(self, x=None, ci=(0.05, 0.95), y_obs=None,
+                   obs_kwargs=None, band_kwargs=None,
+                   title=None, xlabel=None, ylabel=None, ax=None):
+        """Plot median + credible band of posterior predictive.
+
+        Parameters
+        ----------
+        x : array-like, optional
+            x-axis values (e.g. frequency vector, time vector).
+            Defaults to integer indices 0, 1, …, n_obs-1.
+        ci : tuple of two floats
+            Lower and upper quantile levels for the credible band.
+            Default (0.05, 0.95) gives a 90% band.
+        y_obs : array-like, optional
+            Observed data to overlay as scatter points.
+        obs_kwargs : dict, optional
+            Passed to ``ax.scatter`` for observed data.
+        band_kwargs : dict, optional
+            Passed to ``ax.fill_between`` for the credible band.
+        title : str, optional
+        xlabel : str, optional
+        ylabel : str, optional
+        ax : matplotlib Axes, optional
+            If None, a new figure is created.
+
+        Returns
+        -------
+        matplotlib Figure (or None if ax was provided)
+        """
+        import matplotlib.pyplot as plt
+
+        n_obs = self.predictions.shape[1]
+        x = np.arange(n_obs) if x is None else np.asarray(x)
+
+        _band_kw = dict(alpha=0.25, color="steelblue", label=f"{int((ci[1]-ci[0])*100)}% CI")
+        _band_kw.update(band_kwargs or {})
+        _obs_kw = dict(s=20, color="crimson", zorder=5, label="observed")
+        _obs_kw.update(obs_kwargs or {})
+
+        fig = None
+        if ax is None:
+            fig, ax = plt.subplots(figsize=(8, 4), constrained_layout=True)
+
+        lo = self.quantile(ci[0])
+        hi = self.quantile(ci[1])
+        med = self.quantile(0.5)
+
+        ax.fill_between(x, lo, hi, **_band_kw)
+        ax.plot(x, med, color="steelblue", lw=1.5, label="median")
+
+        if y_obs is not None:
+            ax.scatter(x, np.asarray(y_obs), **_obs_kw)
+
+        ax.set_xlabel(xlabel or "")
+        ax.set_ylabel(ylabel or "")
+        ax.legend(fontsize=8)
+        if title is not None and fig is not None:
+            fig.suptitle(title)
+
+        return fig
+
+    def __repr__(self):
+        n_eval, n_obs = self.predictions.shape
+        return f"PosteriorPredictive(n_eval={n_eval}, n_obs={n_obs})"
