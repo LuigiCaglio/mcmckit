@@ -390,6 +390,39 @@ class Result:
     # Dunder
     # ------------------------------------------------------------------
 
+    def as_prior(self, method: str, discard: int = 0):
+        """Convert this result into a prior for the next sequential update step.
+
+        Parameters
+        ----------
+        method : {'gaussian', 'kde'}
+            Density estimation method.  ``'gaussian'`` fits a multivariate
+            normal and is fast in any dimension.  ``'kde'`` fits a
+            non-parametric kernel density estimate (recommended for ≤ 8
+            parameters when the posterior is non-Gaussian or multimodal).
+        discard : int
+            Number of initial samples to discard as burn-in before fitting.
+
+        Returns
+        -------
+        PosteriorPrior
+            A callable that evaluates ``log p(theta)`` and supports
+            ``sample(n)`` for use with TMCMC.
+
+        Examples
+        --------
+        ::
+
+            prior2 = result1.as_prior(method='gaussian', discard=1000)
+            problem2 = mc.Problem(prior=prior2, likelihood=ll_new)
+            result2 = mc.DRAM(n_samples=20_000, initial_cov=prior2.cov).run(
+                problem2, x0=prior2.mean
+            )
+        """
+        from .sequential import PosteriorPrior
+        samples = self.discard(discard).samples
+        return PosteriorPrior(samples, method=method)
+
     def __repr__(self):
         n, d = self.samples.shape
         ar = f", acceptance_rate={self.acceptance_rate:.3f}" if self.acceptance_rate is not None else ""

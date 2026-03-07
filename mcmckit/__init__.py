@@ -6,6 +6,7 @@ from .core.hierarchical import HierarchicalProblem
 from .core.model_comparison import bayes_factor, ModelComparison, BMAResult
 from .core.diagnostics import ess, autocorr, gelman_rubin, convergence_summary
 from .core.multichain import MultiChainResult, run_chains
+from .core.sequential import PosteriorPrior
 from .samplers.metropolis import MetropolisHastings
 from .samplers.mala import MALA
 from .samplers.ram import RAM
@@ -19,6 +20,6 @@ __all__ = [
     "GaussianNoiseLikelihood", "ModalLikelihood", "mac_matrix", "HierarchicalProblem",
     "bayes_factor", "ModelComparison", "BMAResult",
     "ess", "autocorr", "gelman_rubin", "convergence_summary",
-    "MultiChainResult", "run_chains",
+    "MultiChainResult", "run_chains", "PosteriorPrior",
     "MetropolisHastings", "MALA", "RAM", "DRAM", "AdaptiveMALA", "TMCMC", "Gibbs",
 ]

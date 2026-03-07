@@ -45,6 +45,7 @@ nav:
       - Model averaging (BMA): examples/model_averaging.md
       - Diagnostics & multi-chain: examples/diagnostics.md
       - Modal likelihood (MAC): examples/modal.md
+      - Sequential updating: examples/sequential.md
   - API Reference:
       - Problem: api/problem.md
       - Result: api/result.md
@@ -54,6 +55,7 @@ nav:
       - Model comparison: api/model_comparison.md
       - Diagnostics: api/diagnostics.md
       - Multi-chain: api/multichain.md
+      - PosteriorPrior: api/sequential.md
       - Samplers:
           - MetropolisHastings: api/samplers/mh.md
           - MALA: api/samplers/mala.md
