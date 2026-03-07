@@ -53,9 +53,9 @@ true_freqs, true_shapes = system_modes(TRUE_K1, TRUE_K2)
 
 print("True system")
 print(f"  k1 = {TRUE_K1},  k2 = {TRUE_K2}")
-print(f"  ω1 = {true_freqs[0]:.4f} rad/s,  ω2 = {true_freqs[1]:.4f} rad/s")
-print(f"  φ1 = {true_shapes[:, 0]}")
-print(f"  φ2 = {true_shapes[:, 1]}")
+print(f"  f1 = {true_freqs[0]:.4f} rad/s,  f2 = {true_freqs[1]:.4f} rad/s")
+print(f"  mode1 = {true_shapes[:, 0]}")
+print(f"  mode2 = {true_shapes[:, 1]}")
 print()
 
 # ---------------------------------------------------------------------------
@@ -73,9 +73,9 @@ for j in range(shapes_obs.shape[1]):
     shapes_obs[:, j] /= shapes_obs[np.argmax(np.abs(shapes_obs[:, j])), j]
 
 print("Observed data")
-print(f"  ω̂1 = {freq_obs[0]:.4f},  ω̂2 = {freq_obs[1]:.4f}  (true: {true_freqs[0]:.4f}, {true_freqs[1]:.4f})")
-print(f"  φ̂1 = {shapes_obs[:, 0]}  (true: {true_shapes[:, 0]})")
-print(f"  φ̂2 = {shapes_obs[:, 1]}  (true: {true_shapes[:, 1]})")
+print(f"  f1_obs = {freq_obs[0]:.4f},  f2_obs = {freq_obs[1]:.4f}  (true: {true_freqs[0]:.4f}, {true_freqs[1]:.4f})")
+print(f"  mode1_obs = {shapes_obs[:, 0]}  (true: {true_shapes[:, 0]})")
+print(f"  mode2_obs = {shapes_obs[:, 1]}  (true: {true_shapes[:, 1]})")
 print()
 
 # ---------------------------------------------------------------------------
@@ -152,7 +152,7 @@ print()
 theta_map = r_modal.mean()
 mac_vals = ll_modal.mac_values(theta_map)
 freq_errs = ll_modal.freq_errors(theta_map)
-print(f"  At posterior mean θ = [{theta_map[0]:.3f}, {theta_map[1]:.3f}]:")
+print(f"  At posterior mean theta = [{theta_map[0]:.3f}, {theta_map[1]:.3f}]:")
 print(f"    MAC values:      {mac_vals[0]:.4f},  {mac_vals[1]:.4f}")
 print(f"    Freq errors (%): {freq_errs[0]*100:.3f},  {freq_errs[1]*100:.3f}")
 print()
@@ -181,8 +181,24 @@ ll_free = mc.ModalLikelihood(
 )
 # theta = [k1, k2, log_sigma_freq_0, log_sigma_freq_1]
 x0_free = [10.0, 8.0, np.log(0.05), np.log(0.05)]
+def log_prior_free(theta):
+    k1, k2 = theta[0], theta[1]
+    log_sf1, log_sf2 = theta[2], theta[3]
+    if k1 <= 0 or k2 <= 0:
+        return -np.inf
+    # Stiffness: lognormal centred on 10 N/m
+    lp = (
+        -0.5 * ((np.log(k1) - np.log(10)) / 1.5) ** 2
+        - 0.5 * ((np.log(k2) - np.log(10)) / 1.5) ** 2
+    )
+    # Informative prior on log_sigma_freq: N(log(0.05), 0.5^2)
+    # prevents sigma -> inf degeneracy
+    lp -= 0.5 * ((log_sf1 - np.log(SIGMA_FREQ)) / 0.5) ** 2
+    lp -= 0.5 * ((log_sf2 - np.log(SIGMA_FREQ)) / 0.5) ** 2
+    return lp
+
 prob_free = mc.Problem(
-    prior=log_prior,      # prior only covers k1, k2 (ll handles noise params)
+    prior=log_prior_free,
     likelihood=ll_free,
     param_names=["k1", "k2", "log_sf1", "log_sf2"],
 )
@@ -192,8 +208,8 @@ result_free = mc.DRAM(n_samples=15_000, initial_cov=0.3 * np.eye(4)).run(
 r_free = result_free.discard(3000)
 print(f"  k1         = {r_free.mean()[0]:.3f} ± {r_free.std()[0]:.3f}  (true: {TRUE_K1})")
 print(f"  k2         = {r_free.mean()[1]:.3f} ± {r_free.std()[1]:.3f}  (true: {TRUE_K2})")
-print(f"  σ_freq,1   = {np.exp(r_free.mean()[2]):.4f} ± {np.exp(r_free.std()[2]):.4f}  (true: {SIGMA_FREQ})")
-print(f"  σ_freq,2   = {np.exp(r_free.mean()[3]):.4f} ± {np.exp(r_free.std()[3]):.4f}  (true: {SIGMA_FREQ})")
+print(f"  sigma_f1   = {np.exp(r_free.mean()[2]):.4f} +/- {r_free.std()[2]:.4f} log-scale  (true: {SIGMA_FREQ})")
+print(f"  sigma_f2   = {np.exp(r_free.mean()[3]):.4f} +/- {r_free.std()[3]:.4f} log-scale  (true: {SIGMA_FREQ})")
 print()
 
 # ---------------------------------------------------------------------------
