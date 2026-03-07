@@ -219,15 +219,17 @@ def run_chains(
     x0 : array-like or list of array-like
         Starting point(s).
 
-        * **Single array** ``(d,)`` — all chains start from ``x0`` with a
-          small random jitter of ``jitter_scale * |x0|`` (or ``jitter_scale``
-          when ``x0[i] == 0``).
-        * **List of arrays** of length ``n_chains`` — each chain uses the
-          corresponding starting point exactly; ``n_chains`` is inferred from
-          the list length and the argument is ignored.
+        * **Single vector** — a 1-D array or a flat list of scalars such as
+          ``[10.0, 8.0]``.  All chains start near ``x0`` with a small random
+          jitter of ``jitter_scale * |x0|`` (or ``jitter_scale`` when the
+          component is zero).
+        * **List of vectors** — a list of arrays/lists, e.g.
+          ``[[10.0, 8.0], [9.5, 7.5], ...]``, one per chain.  Each chain
+          starts exactly at the corresponding point; ``n_chains`` is inferred
+          from the list length.
 
     n_chains : int
-        Number of chains.  Ignored when ``x0`` is a list.
+        Number of chains.  Ignored when ``x0`` is a list of vectors.
     jitter_scale : float
         Relative jitter applied to a single ``x0``.  Default 0.1 (10%).
 
@@ -246,13 +248,21 @@ def run_chains(
     """
     import copy
 
-    x0 = np.asarray(x0, dtype=float) if not isinstance(x0, list) else x0
+    # Determine whether x0 is a single starting point or a list of them.
+    # A list of lists/arrays → multiple explicit starting points.
+    # A list of scalars or a numpy array → single starting point to jitter.
+    _is_multi = (
+        isinstance(x0, list)
+        and len(x0) > 0
+        and isinstance(x0[0], (list, np.ndarray))
+    )
 
     # Build list of starting points
-    if isinstance(x0, list):
+    if _is_multi:
         starts = [np.asarray(s, dtype=float) for s in x0]
         n_chains = len(starts)
     else:
+        x0 = np.asarray(x0, dtype=float)
         starts = []
         for _ in range(n_chains):
             scale = np.where(np.abs(x0) > 0,
