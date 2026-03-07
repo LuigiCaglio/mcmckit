@@ -213,8 +213,8 @@ try:
     axes[0].set_ylabel("k2 [N/m]")
     plt.suptitle("Sequential Bayesian updating — posterior shrinks with each campaign")
     plt.tight_layout()
-    plt.savefig("sequential_posterior.png", dpi=150)
-    print("Saved: sequential_posterior.png")
+    # plt.savefig("sequential_posterior.png", dpi=150)
+    # print("Saved: sequential_posterior.png")
     plt.show()
 
 except ImportError:
