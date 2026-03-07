@@ -41,10 +41,12 @@ nav:
       - Gibbs sampling: examples/gibbs.md
       - Noise estimation: examples/noise.md
       - Structural identification: examples/structural.md
+      - Model class selection: examples/model_comparison.md
   - API Reference:
       - Problem: api/problem.md
       - Result: api/result.md
       - GaussianNoiseLikelihood: api/noise.md
+      - Model comparison: api/model_comparison.md
       - Samplers:
           - MetropolisHastings: api/samplers/mh.md
           - MALA: api/samplers/mala.md

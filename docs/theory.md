@@ -135,3 +135,69 @@ When different measurement types have different noise levels (e.g. frequency 1 v
 $$\log p(y \mid \theta) = \sum_i \log p(y_i \mid \theta, \sigma_i)$$
 
 In the marginalised case, each channel has an independent InvGamma prior and is integrated separately.
+
+---
+
+## Model class selection
+
+### The evidence as a model score
+
+The **evidence** (marginal likelihood) of a model $M$ is:
+
+$$p(y \mid M) = \int p(y \mid \theta, M)\, p(\theta \mid M)\, d\theta$$
+
+It is the probability of the data averaged over the prior.  A model that fits the data well *and* does so with a compact prior gets a high evidence — this is the mathematical expression of **Occam's razor**: unnecessary parameters are penalized because they spread prior probability over regions that do not contribute to the fit.
+
+### Bayes factor
+
+Given two competing models $M_1$ and $M_2$, the **Bayes factor** is:
+
+$$B_{12} = \frac{p(y \mid M_1)}{p(y \mid M_2)}$$
+
+It is the factor by which the data update the prior odds in favour of $M_1$.  In log form:
+
+$$\ln B_{12} = \ln p(y \mid M_1) - \ln p(y \mid M_2)$$
+
+### Jeffreys scale
+
+Interpretation of $\log_{10} B_{12}$ (evidence *in favour of* $M_1$):
+
+| $\log_{10} B_{12}$ | Interpretation |
+|---|---|
+| $> 2$ | Decisive |
+| $1$ – $2$ | Strong |
+| $0.5$ – $1$ | Substantial |
+| $< 0.5$ | Barely worth mentioning |
+
+Negative values indicate evidence in favour of $M_2$.
+
+### Evidence from TMCMC
+
+TMCMC accumulates the log-evidence as a byproduct of the tempering stages.  At each stage the incremental contribution is:
+
+$$\ln p(y \mid M) \mathrel{+}= \ln \mathbb{E}_{\theta \sim p_j}\!\left[p(y \mid \theta)^{\Delta\beta}\right]$$
+
+which is estimated from the particles without any additional computation.  No other sampler in mcmckit computes the evidence — use TMCMC for model comparison.
+
+### Workflow
+
+```python
+import mcmckit as mc
+
+comp = mc.ModelComparison(
+    models=[
+        ("M1", problem_1, prior_samples_1),
+        ("M2", problem_2, prior_samples_2),
+    ],
+    tmcmc_kwargs={"n_particles": 1000},
+)
+comp.run()
+comp.summary()
+```
+
+For a standalone pairwise comparison:
+
+```python
+bf = mc.bayes_factor(result_1.log_evidence, result_2.log_evidence)
+# {'log_bf': ..., 'log10_bf': ..., 'bf': ..., 'preferred': 'M1', 'evidence': 'Decisive'}
+```
