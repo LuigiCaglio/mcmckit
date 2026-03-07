@@ -28,6 +28,11 @@ classifiers = [
 [project.optional-dependencies]
 plot = ["matplotlib"]
 dev  = ["pytest"]
+docs = [
+    "mkdocs-material",
+    "mkdocstrings[python]",
+    "pymdown-extensions",
+]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

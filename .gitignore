@@ -37,6 +37,7 @@ htmlcov/
 .DS_Store
 Thumbs.db
 
-# Docs build
+# Docs build output (never the source)
 docs/_build/
-docs/api/
+
+notes_chat_bayesian_,model_updating_package.md

@@ -1,0 +1,95 @@
+site_name: mcmckit
+site_description: Lightweight Bayesian model updating with MCMC for engineering applications
+site_author: Luigi
+docs_dir: docs
+repo_url: https://github.com/your-username/mcmckit
+repo_name: mcmckit
+
+theme:
+  name: material
+  palette:
+    - scheme: default
+      primary: teal
+      accent: cyan
+      toggle:
+        icon: material/weather-night
+        name: Switch to dark mode
+    - scheme: slate
+      primary: teal
+      accent: cyan
+      toggle:
+        icon: material/weather-sunny
+        name: Switch to light mode
+  features:
+    - navigation.tabs
+    - navigation.tabs.sticky
+    - navigation.sections
+    - navigation.expand
+    - navigation.top
+    - toc.integrate
+    - content.code.copy
+    - content.code.annotate
+
+nav:
+  - Home: index.md
+  - Theory: theory.md
+  - Quickstart: quickstart.md
+  - Examples:
+      - Basic MH & MALA: examples/basic.md
+      - Adaptive samplers: examples/adaptive.md
+      - TMCMC: examples/tmcmc.md
+      - Gibbs sampling: examples/gibbs.md
+      - Noise estimation: examples/noise.md
+      - Structural identification: examples/structural.md
+  - API Reference:
+      - Problem: api/problem.md
+      - Result: api/result.md
+      - GaussianNoiseLikelihood: api/noise.md
+      - Samplers:
+          - MetropolisHastings: api/samplers/mh.md
+          - MALA: api/samplers/mala.md
+          - RAM: api/samplers/ram.md
+          - DRAM: api/samplers/dram.md
+          - AdaptiveMALA: api/samplers/adaptive_mala.md
+          - TMCMC: api/samplers/tmcmc.md
+          - Gibbs: api/samplers/gibbs.md
+
+plugins:
+  - search
+  - mkdocstrings:
+      handlers:
+        python:
+          options:
+            docstring_style: numpy
+            show_source: true
+            show_root_heading: true
+            show_root_full_path: false
+            show_category_heading: true
+            show_signature_annotations: true
+            separate_signature: true
+            members_order: source
+            heading_level: 2
+
+markdown_extensions:
+  - admonition
+  - pymdownx.details
+  - pymdownx.superfences
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.arithmatex:
+      generic: true
+  - attr_list
+  - md_in_html
+  - tables
+  - toc:
+      permalink: true
+
+extra_javascript:
+  - https://polyfill.io/v3/polyfill.min.js?features=es6
+  - https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js
+
+extra_css: []
