@@ -1,102 +1,178 @@
+from __future__ import annotations
+from typing import Union
 import numpy as np
 
 
 class GaussianNoiseLikelihood:
     """Log-likelihood for a forward model with Gaussian observation noise.
 
-    Three modes, selected by the constructor arguments:
+    Supports **scalar** or **per-channel** noise, where a "channel" is a
+    group of observations sharing one noise parameter (e.g. all measurements
+    of the 1st natural frequency form one channel, all measurements of the
+    2nd natural frequency form another).
 
-    **Fixed σ** (``noise_std`` is a float):
-        σ is known.  ``theta`` contains only model parameters.
+    Three noise modes
+    -----------------
+    **Fixed σ** — ``noise_std`` is a float or array:
 
-        log p(y|θ) = -0.5 * ||y - f(θ)||² / σ² - n·log(σ)
+        log p(y|θ) = -0.5 · Σᵢ ||rᵢ||² / σᵢ² - nᵢ·log(σᵢ)
 
-    **Estimated σ** (``noise_std=None``, ``marginalise_noise=False``):
-        σ is a free parameter.  The *last element* of ``theta`` is
-        ``log(σ)`` and is sampled jointly with the model parameters.
+    **Estimated σ** — ``noise_std=None``: the last ``n_channels`` elements of
+    ``theta`` are ``[log σ₁, …, log σₖ]`` and are sampled jointly with the
+    model parameters.
 
-        log p(y|θ, log σ) = -0.5 * ||y - f(θ)||² / σ² - n·log(σ)
+    **Marginalised σ** — ``noise_std=None, marginalise_noise=True``:
+    each σᵢ² is given an Inverse-Gamma(αᵢ, βᵢ) prior and integrated out
+    analytically.  Works for *any* nonlinear forward model:
 
-    **Marginalised σ** (``noise_std=None``, ``marginalise_noise=True``):
-        σ² is given an Inverse-Gamma(α, β) prior and integrated out
-        analytically.  ``theta`` contains *only* model parameters —
-        no noise parameter is sampled.  This works for *any* forward
-        model, linear or nonlinear:
-
-        log p(y|θ) = -(α + n/2) · log(β + 0.5·||y - f(θ)||²) + const
-
-        The posterior mean of σ² is ``(β + 0.5·RSS) / (α + n/2 - 1)``
-        and can be retrieved via ``posterior_sigma(theta)``.
+        log p(y|θ) = Σᵢ  -(αᵢ + nᵢ/2) · log(βᵢ + 0.5·||rᵢ||²)
 
     Parameters
     ----------
     forward_model : callable
         ``f(theta_model) -> array-like, shape (n_obs,)``.
     y_obs : array-like, shape (n_obs,)
-        Observed data.
-    noise_std : float or None
-        Fixed σ.  Use ``None`` for either estimated or marginalised modes.
+        Observed data (flat vector).
+    noise_std : float, array-like, or None
+        Fixed noise standard deviation(s).  Options:
+
+        - ``float`` — same σ for every observation.
+        - ``array of length n_obs`` — per-observation σ.
+        - ``array of length n_channels`` — one σ per channel group;
+          requires ``groups`` to be set.
+        - ``None`` — σ is free (estimated or marginalised).
+
+    groups : list of array-like of int, or None
+        Index groups defining channels.  E.g.::
+
+            groups=[[0,1,2,3], [4,5,6,7]]   # 2 channels of 4 obs each
+
+        ``None`` (default) treats all observations as one channel.
+        When ``noise_std`` is a per-channel array or ``None``, ``groups``
+        is required.
+
     marginalise_noise : bool
-        If ``True`` (and ``noise_std=None``), analytically marginalise σ²
-        using an Inverse-Gamma prior.  Default ``False``.
-    inv_gamma_alpha : float
-        Shape parameter α of the Inverse-Gamma prior on σ².  Default 1.0
-        (weakly informative).  Only used when ``marginalise_noise=True``.
-    inv_gamma_beta : float
-        Scale parameter β of the Inverse-Gamma prior on σ².  Default
-        ``1e-4`` (weakly informative).  Only used when
-        ``marginalise_noise=True``.
+        If ``True`` (and ``noise_std=None``), analytically marginalise each
+        σᵢ² using independent Inverse-Gamma priors.  Default ``False``.
+
+    inv_gamma_alpha : float or array-like
+        Shape parameter(s) α of the Inverse-Gamma prior on σᵢ².
+        Scalar → same for all channels.  Default 1.0.
+
+    inv_gamma_beta : float or array-like
+        Scale parameter(s) β of the Inverse-Gamma prior on σᵢ².
+        Scalar → same for all channels.  Default 1e-4.
 
     Examples
     --------
-    Fixed noise::
+    Scalar fixed noise::
 
         ll = GaussianNoiseLikelihood(forward_model=f, y_obs=y, noise_std=0.05)
-        problem = mc.Problem(prior=log_prior, likelihood=ll,
-                             param_names=["E", "zeta"])
 
-    Estimated noise (last param = log σ)::
+    Per-channel fixed noise (2 frequencies, 4 repetitions each)::
 
-        ll = GaussianNoiseLikelihood(forward_model=f, y_obs=y)
-        problem = mc.Problem(prior=log_prior, likelihood=ll,
-                             param_names=["E", "zeta", "log_sigma"])
+        ll = GaussianNoiseLikelihood(
+            forward_model=f, y_obs=y,
+            noise_std=[0.05, 0.10],
+            groups=[[0,1,2,3], [4,5,6,7]],
+        )
 
-    Marginalised noise (no noise param in theta)::
+    Per-channel estimated noise (2 free log_σ params appended to theta)::
 
-        ll = GaussianNoiseLikelihood(forward_model=f, y_obs=y,
-                                     marginalise_noise=True)
-        problem = mc.Problem(prior=log_prior, likelihood=ll,
-                             param_names=["E", "zeta"])
+        ll = GaussianNoiseLikelihood(
+            forward_model=f, y_obs=y,
+            groups=[[0,1,2,3], [4,5,6,7]],
+        )
+        # theta = [*model_params, log_sigma_1, log_sigma_2]
+
+    Per-channel marginalised noise::
+
+        ll = GaussianNoiseLikelihood(
+            forward_model=f, y_obs=y,
+            groups=[[0,1,2,3], [4,5,6,7]],
+            marginalise_noise=True,
+            inv_gamma_alpha=[2.0, 2.0],
+            inv_gamma_beta=[0.05**2, 0.10**2],
+        )
     """
 
-    def __init__(self, forward_model, y_obs, noise_std=None,
-                 marginalise_noise=False,
-                 inv_gamma_alpha=1.0, inv_gamma_beta=1e-4):
+    def __init__(self, forward_model, y_obs,
+                 noise_std: Union[float, list, np.ndarray, None] = None,
+                 groups=None,
+                 marginalise_noise: bool = False,
+                 inv_gamma_alpha: Union[float, list, np.ndarray] = 1.0,
+                 inv_gamma_beta: Union[float, list, np.ndarray] = 1e-4):
+
         self._forward = forward_model
         self._y_obs = np.asarray(y_obs, dtype=float).ravel()
-        self._n_obs = self._y_obs.size
+        n_obs = self._y_obs.size
 
-        if noise_std is not None and float(noise_std) <= 0:
-            raise ValueError("noise_std must be positive.")
-        self._noise_std = float(noise_std) if noise_std is not None else None
+        # --- resolve groups --------------------------------------------------
+        if groups is None:
+            self._groups = [np.arange(n_obs)]
+        else:
+            self._groups = [np.asarray(g, dtype=int) for g in groups]
+            # validate
+            all_idx = np.concatenate(self._groups)
+            if len(all_idx) != n_obs or set(all_idx.tolist()) != set(range(n_obs)):
+                raise ValueError(
+                    "groups must partition range(n_obs) exactly once."
+                )
+        n_channels = len(self._groups)
 
+        # --- resolve noise_std -----------------------------------------------
         if marginalise_noise and noise_std is not None:
             raise ValueError(
                 "marginalise_noise=True is incompatible with a fixed noise_std."
             )
         self._marginalise = marginalise_noise
-        self._alpha = float(inv_gamma_alpha)
-        self._beta = float(inv_gamma_beta)
+
+        if noise_std is None:
+            self._sigmas = None          # free or marginalised
+        else:
+            arr = np.asarray(noise_std, dtype=float).ravel()
+            if arr.size == 1:
+                # broadcast scalar to all obs
+                self._sigmas = np.full(n_obs, float(arr[0]))
+            elif arr.size == n_channels:
+                # one sigma per channel → broadcast to per-obs
+                self._sigmas = np.empty(n_obs)
+                for sigma_i, idx in zip(arr, self._groups):
+                    self._sigmas[idx] = sigma_i
+            elif arr.size == n_obs:
+                self._sigmas = arr
+            else:
+                raise ValueError(
+                    f"noise_std has {arr.size} elements; expected 1, "
+                    f"{n_channels} (n_channels), or {n_obs} (n_obs)."
+                )
+            if np.any(self._sigmas <= 0):
+                raise ValueError("All noise_std values must be positive.")
+
+        self._n_channels = n_channels
+
+        # --- InvGamma hyperparameters ----------------------------------------
+        alpha_arr = np.asarray(inv_gamma_alpha, dtype=float).ravel()
+        beta_arr  = np.asarray(inv_gamma_beta,  dtype=float).ravel()
+        self._alpha = np.broadcast_to(alpha_arr, (n_channels,)).copy()
+        self._beta  = np.broadcast_to(beta_arr,  (n_channels,)).copy()
+
+    # -------------------------------------------------------------------------
 
     @property
     def estimate_noise(self):
-        """True if log σ is a free parameter (last element of theta)."""
-        return self._noise_std is None and not self._marginalise
+        """True if log σᵢ are free parameters (last n_channels elements of theta)."""
+        return self._sigmas is None and not self._marginalise
 
     @property
     def marginalise_noise(self):
-        """True if σ² is analytically marginalised out."""
+        """True if σᵢ² are analytically marginalised out."""
         return self._marginalise
+
+    @property
+    def n_noise_params(self):
+        """Number of free noise parameters appended to theta (0 if fixed/marginalised)."""
+        return self._n_channels if self.estimate_noise else 0
 
     def __call__(self, theta):
         """Evaluate log p(y | theta).
@@ -104,8 +180,9 @@ class GaussianNoiseLikelihood:
         Parameters
         ----------
         theta : array-like
-            - Fixed/marginalised mode: model parameters only.
-            - Estimated mode: model parameters + ``log_sigma`` as last element.
+            - Fixed / marginalised: model parameters only.
+            - Estimated: model parameters followed by ``n_noise_params``
+              values of ``log σᵢ``.
 
         Returns
         -------
@@ -114,38 +191,50 @@ class GaussianNoiseLikelihood:
         theta = np.asarray(theta, dtype=float)
 
         if self.estimate_noise:
-            theta_model = theta[:-1]
-            sigma = np.exp(float(theta[-1]))
-            y_pred = np.asarray(self._forward(theta_model), dtype=float).ravel()
-            residuals = self._y_obs - y_pred
-            return (-0.5 * np.dot(residuals, residuals) / sigma**2
-                    - self._n_obs * np.log(sigma))
+            theta_model = theta[:-self._n_channels]
+            log_sigmas   = theta[-self._n_channels:]
+            sigmas = np.exp(log_sigmas)
+            # broadcast to per-obs
+            sigma_arr = np.empty(self._y_obs.size)
+            for s, idx in zip(sigmas, self._groups):
+                sigma_arr[idx] = s
+        elif self._sigmas is not None:
+            theta_model = theta
+            sigma_arr   = self._sigmas
+        else:
+            theta_model = theta
+            sigma_arr   = None   # marginalised
 
-        y_pred = np.asarray(self._forward(theta), dtype=float).ravel()
+        y_pred = np.asarray(self._forward(theta_model), dtype=float).ravel()
         residuals = self._y_obs - y_pred
-        rss = float(np.dot(residuals, residuals))
 
         if self._marginalise:
-            # Marginal likelihood with InvGamma(alpha, beta) prior on sigma^2
-            # log p(y|theta) = -(alpha + n/2) * log(beta + 0.5*RSS) + const
-            a = self._alpha + 0.5 * self._n_obs
-            b = self._beta + 0.5 * rss
-            return -a * np.log(b)
+            ll = 0.0
+            for k, idx in enumerate(self._groups):
+                r = residuals[idx]
+                rss = float(np.dot(r, r))
+                n_k = len(idx)
+                a = self._alpha[k] + 0.5 * n_k
+                b = self._beta[k]  + 0.5 * rss
+                ll -= a * np.log(b)
+            return ll
 
-        # Fixed sigma
-        sigma = self._noise_std
-        return -0.5 * rss / sigma**2 - self._n_obs * np.log(sigma)
+        # fixed or estimated
+        return float(-0.5 * np.dot(residuals / sigma_arr, residuals)
+                     - np.sum(np.log(sigma_arr)))
 
     def posterior_sigma(self, theta):
-        """Posterior mean of σ given model parameters (marginalised mode only).
-
-        Returns sqrt(E[σ² | theta, y]), which can be used as a point estimate
-        of the noise level after inference.
+        """Posterior mean of each σᵢ given model parameters (marginalised mode).
 
         Parameters
         ----------
         theta : array-like
-            Model parameters (not including log_sigma).
+            Model parameters only.
+
+        Returns
+        -------
+        np.ndarray, shape (n_channels,)
+            ``sqrt(E[σᵢ² | theta, y])`` for each channel.
         """
         if not self._marginalise:
             raise RuntimeError(
@@ -153,10 +242,18 @@ class GaussianNoiseLikelihood:
             )
         theta = np.asarray(theta, dtype=float)
         y_pred = np.asarray(self._forward(theta), dtype=float).ravel()
-        rss = float(np.dot(self._y_obs - y_pred, self._y_obs - y_pred))
-        a = self._alpha + 0.5 * self._n_obs
-        b = self._beta + 0.5 * rss
-        # E[sigma^2] = b / (a - 1)  for a > 1
-        if a <= 1:
-            raise RuntimeError("alpha + n/2 must be > 1 for a finite posterior mean.")
-        return np.sqrt(b / (a - 1))
+        residuals = self._y_obs - y_pred
+
+        result = np.empty(self._n_channels)
+        for k, idx in enumerate(self._groups):
+            r = residuals[idx]
+            rss = float(np.dot(r, r))
+            n_k = len(idx)
+            a = self._alpha[k] + 0.5 * n_k
+            b = self._beta[k]  + 0.5 * rss
+            if a <= 1:
+                raise RuntimeError(
+                    f"alpha[{k}] + n_k/2 must be > 1 for a finite posterior mean."
+                )
+            result[k] = np.sqrt(b / (a - 1))
+        return result
