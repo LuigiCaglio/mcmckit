@@ -59,7 +59,7 @@ def log_prior(theta):
 
 
 likelihood = mc.GaussianNoiseLikelihood(
-    forward_model=lambda theta: np.tile(natural_frequencies(theta[0], theta[1]), N_OBS),
+    forward_model=lambda theta: np.repeat(natural_frequencies(theta[0], theta[1]), N_OBS),
     y_obs=y_obs,
     noise_std=SIGMA_OBS,
 )
