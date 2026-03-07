@@ -292,7 +292,279 @@ class ModelComparison:
 
         return fig
 
+    # ------------------------------------------------------------------
+    # Model averaging
+    # ------------------------------------------------------------------
+
+    def weights(self, prior_weights=None) -> np.ndarray:
+        """Posterior model probabilities (Bayesian Model Averaging weights).
+
+        With equal prior model probabilities:
+
+        .. math::
+
+            w_k = \\frac{p(y \\mid M_k)}{\\sum_j p(y \\mid M_j)}
+
+        Parameters
+        ----------
+        prior_weights : array-like of float, optional
+            Prior model probabilities :math:`p(M_k)`, in the same order as
+            ``summary()`` output (sorted best → worst by evidence).
+            Defaults to uniform (1/K for each model).
+
+        Returns
+        -------
+        np.ndarray, shape (n_models,)
+            Posterior model weights, summing to 1.  Order matches
+            ``summary()`` (best model first).
+        """
+        if not self._results:
+            raise RuntimeError("Call run() before weights().")
+        log_evs = np.array([r["log_evidence"] for r in self._results],
+                           dtype=float)
+        if prior_weights is not None:
+            pw = np.asarray(prior_weights, dtype=float)
+            if len(pw) != len(self._results):
+                raise ValueError(
+                    f"prior_weights length {len(pw)} != n_models {len(self._results)}"
+                )
+            log_evs = log_evs + np.log(pw / pw.sum())
+        log_evs -= np.max(log_evs)   # numerical stability
+        w = np.exp(log_evs)
+        return w / w.sum()
+
+    def predict(self, forward_models, n_eval: int = 500) -> "BMAResult":
+        """Bayesian Model Averaged posterior predictive.
+
+        Draws ``round(w_k * n_eval)`` samples from each model's posterior,
+        evaluates the corresponding forward model, and returns a
+        :class:`BMAResult` containing the mixture predictions.
+
+        Parameters
+        ----------
+        forward_models : dict or list
+            Forward model callables, one per model.
+
+            * **dict** ``{name: callable}`` — keyed by the model name strings
+              passed to the constructor.
+            * **list** of callables — in the same order as ``summary()`` output
+              (sorted best → worst by evidence).
+
+        n_eval : int
+            Total number of forward model evaluations to distribute across
+            models proportionally to their weights.  Default 500.
+
+        Returns
+        -------
+        BMAResult
+
+        Examples
+        --------
+        ::
+
+            bma = comp.predict(
+                forward_models={
+                    "M1: 1-DOF": lambda theta: [omega(theta[0]), omega(theta[0])],
+                    "M2: 2-DOF": lambda theta: natural_frequencies(theta[0], theta[1]),
+                },
+                n_eval=1000,
+            )
+            bma.plot_bands(y_obs=y_obs)
+        """
+        if not self._results:
+            raise RuntimeError("Call run() before predict().")
+
+        w = self.weights()
+        model_preds = []
+
+        for i, r in enumerate(self._results):
+            n_k = max(1, round(float(w[i]) * n_eval))
+            if isinstance(forward_models, dict):
+                fwd = forward_models[r["name"]]
+            else:
+                fwd = forward_models[i]
+            pp = r["result"].posterior_predictive(fwd, n_eval=n_k)
+            model_preds.append(pp.predictions)
+
+        return BMAResult(
+            model_predictions=model_preds,
+            weights=w,
+            model_names=[r["name"] for r in self._results],
+        )
+
     def __repr__(self):
         n = len(self._models)
         ran = "run" if self._results else "not run"
         return f"ModelComparison(n_models={n}, status={ran!r})"
+
+
+# ------------------------------------------------------------------
+# BMAResult
+# ------------------------------------------------------------------
+
+class BMAResult:
+    """Posterior predictive distribution from Bayesian Model Averaging.
+
+    Produced by :meth:`ModelComparison.predict`.  Stores predictions from
+    each model separately and exposes mixture statistics and plots.
+
+    Parameters
+    ----------
+    model_predictions : list of np.ndarray, each shape (n_k, n_obs)
+        Forward model outputs at posterior samples, one array per model.
+    weights : np.ndarray, shape (n_models,)
+        Posterior model probabilities.
+    model_names : list of str
+
+    Notes
+    -----
+    Statistics (``mean``, ``std``, ``quantile``) are computed on the
+    concatenated mixture sample, where model k contributes
+    ``round(w_k * n_eval)`` samples.  When one model is decisive
+    (weight ≈ 1) the BMA prediction effectively collapses to that model.
+    """
+
+    def __init__(self, model_predictions: list, weights: np.ndarray,
+                 model_names: list):
+        self.model_predictions = [np.asarray(p, dtype=float)
+                                   for p in model_predictions]
+        self.weights = np.asarray(weights, dtype=float)
+        self.model_names = list(model_names)
+        # Concatenated mixture sample
+        self.predictions = np.concatenate(self.model_predictions, axis=0)
+
+    # ------------------------------------------------------------------
+    # Statistics
+    # ------------------------------------------------------------------
+
+    def mean(self) -> np.ndarray:
+        """Pointwise mean of the BMA predictive, shape (n_obs,)."""
+        return np.mean(self.predictions, axis=0)
+
+    def std(self) -> np.ndarray:
+        """Pointwise std of the BMA predictive, shape (n_obs,)."""
+        return np.std(self.predictions, axis=0)
+
+    def quantile(self, q) -> np.ndarray:
+        """Pointwise quantile(s) of the BMA predictive.
+
+        Parameters
+        ----------
+        q : float or array-like
+
+        Returns
+        -------
+        np.ndarray, shape (n_obs,) or (len(q), n_obs)
+        """
+        return np.quantile(self.predictions, q, axis=0)
+
+    def decompose(self) -> dict:
+        """Per-model contribution: weight, mean prediction, and std.
+
+        Returns
+        -------
+        dict keyed by model name, each value a dict with keys
+        ``weight``, ``mean``, ``std``.
+        """
+        return {
+            name: {
+                "weight": float(w),
+                "mean": p.mean(axis=0),
+                "std": p.std(axis=0),
+            }
+            for name, w, p in zip(self.model_names, self.weights,
+                                   self.model_predictions)
+        }
+
+    # ------------------------------------------------------------------
+    # Plots
+    # ------------------------------------------------------------------
+
+    def plot_bands(self, x=None, ci=(0.05, 0.95), y_obs=None,
+                   obs_kwargs=None, band_kwargs=None,
+                   title=None, xlabel=None, ylabel=None, ax=None):
+        """Credible band of the BMA posterior predictive.
+
+        Parameters
+        ----------
+        x : array-like, optional
+        ci : tuple of two floats
+        y_obs : array-like, optional
+        obs_kwargs, band_kwargs : dict, optional
+        title, xlabel, ylabel : str, optional
+        ax : matplotlib Axes, optional
+
+        Returns
+        -------
+        matplotlib Figure (or None if ax was provided)
+        """
+        import matplotlib.pyplot as plt
+
+        n_obs = self.predictions.shape[1]
+        x = np.arange(n_obs) if x is None else np.asarray(x)
+
+        _band_kw = dict(alpha=0.25, color="steelblue",
+                        label=f"{int((ci[1] - ci[0]) * 100)}% CI (BMA)")
+        _band_kw.update(band_kwargs or {})
+        _obs_kw = dict(s=20, color="crimson", zorder=5, label="observed")
+        _obs_kw.update(obs_kwargs or {})
+
+        fig = None
+        if ax is None:
+            fig, ax = plt.subplots(figsize=(8, 4), constrained_layout=True)
+
+        lo = self.quantile(ci[0])
+        hi = self.quantile(ci[1])
+        med = self.quantile(0.5)
+
+        ax.fill_between(x, lo, hi, **_band_kw)
+        ax.plot(x, med, color="steelblue", lw=1.5, label="BMA median")
+
+        if y_obs is not None:
+            ax.scatter(x, np.asarray(y_obs), **_obs_kw)
+
+        ax.set_xlabel(xlabel or "")
+        ax.set_ylabel(ylabel or "")
+        ax.legend(fontsize=8)
+        if title is not None and fig is not None:
+            fig.suptitle(title)
+        return fig
+
+    def plot_decompose(self, x=None, title=None, xlabel=None, ylabel=None):
+        """Per-model mean predictions with line width proportional to weight.
+
+        Helps visualise how much each model contributes to the BMA.
+
+        Returns
+        -------
+        matplotlib Figure
+        """
+        import matplotlib.pyplot as plt
+
+        n_obs = self.predictions.shape[1]
+        x = np.arange(n_obs) if x is None else np.asarray(x)
+
+        fig, ax = plt.subplots(figsize=(8, 4), constrained_layout=True)
+        cmap = plt.cm.tab10
+        for i, (name, w, p) in enumerate(zip(self.model_names, self.weights,
+                                              self.model_predictions)):
+            lw = 0.5 + 4.0 * float(w)   # thicker line = higher weight
+            ax.plot(x, p.mean(axis=0), lw=lw, color=cmap(i / 10),
+                    label=f"{name}  (w={w:.3f})", alpha=0.85)
+
+        bma_mean = self.mean()
+        ax.plot(x, bma_mean, "k--", lw=1.5, label="BMA mean")
+
+        ax.set_xlabel(xlabel or "")
+        ax.set_ylabel(ylabel or "")
+        ax.legend(fontsize=8)
+        if title is not None:
+            fig.suptitle(title)
+        return fig
+
+    def __repr__(self) -> str:
+        K = len(self.model_names)
+        n_obs = self.predictions.shape[1]
+        w_str = ", ".join(f"{n}: {w:.3f}"
+                          for n, w in zip(self.model_names, self.weights))
+        return f"BMAResult(n_models={K}, n_obs={n_obs}, weights=[{w_str}])"

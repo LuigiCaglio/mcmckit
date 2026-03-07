@@ -246,3 +246,57 @@ For a standalone pairwise comparison:
 bf = mc.bayes_factor(result_1.log_evidence, result_2.log_evidence)
 # {'log_bf': ..., 'log10_bf': ..., 'bf': ..., 'preferred': 'M1', 'evidence': 'Decisive'}
 ```
+
+---
+
+## Bayesian Model Averaging
+
+When no model is decisively preferred — or when you want predictions that
+are robust to model uncertainty — **Bayesian Model Averaging (BMA)**
+combines all models weighted by their posterior probability.
+
+### Model posterior probabilities
+
+Assuming equal prior model probabilities $p(M_k) = 1/K$:
+
+$$w_k = p(M_k \mid y) = \frac{p(y \mid M_k)}{\sum_j p(y \mid M_j)}$$
+
+With informative prior model probabilities:
+
+$$w_k \propto p(y \mid M_k)\, p(M_k)$$
+
+### BMA posterior predictive
+
+For any quantity of interest $Q = f(\theta)$:
+
+$$p(Q \mid y) = \sum_{k=1}^{K} w_k\, p(Q \mid y, M_k)$$
+
+The BMA predictive is a **mixture** of each model's posterior predictive,
+weighted by $w_k$.  In practice, this is approximated by drawing
+$\lfloor w_k \cdot N \rfloor$ posterior samples from model $k$ and
+evaluating $f(\theta)$ at those samples.
+
+### Behaviour
+
+- When evidence is decisive ($w_{\text{best}} \approx 1$), BMA collapses
+  to the best model's prediction.
+- When two models are comparably supported ($w_1 \approx w_2 \approx 0.5$),
+  BMA genuinely averages the two predictive distributions — potentially
+  widening the credible band to reflect model uncertainty.
+- BMA predictions are always more conservative (wider bands) than
+  conditioning on a single model.
+
+### Workflow
+
+```python
+bma = comp.predict(
+    forward_models={
+        "M1": lambda theta: fwd_m1(theta),
+        "M2": lambda theta: fwd_m2(theta),
+    },
+    n_eval=1000,
+)
+print(bma)          # weights for each model
+bma.plot_bands()    # credible band of the averaged predictive
+bma.decompose()     # per-model mean, std, weight
+```

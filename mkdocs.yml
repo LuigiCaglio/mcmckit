@@ -42,6 +42,7 @@ nav:
       - Noise estimation: examples/noise.md
       - Structural identification: examples/structural.md
       - Model class selection: examples/model_comparison.md
+      - Model averaging (BMA): examples/model_averaging.md
       - Diagnostics & multi-chain: examples/diagnostics.md
   - API Reference:
       - Problem: api/problem.md

@@ -40,3 +40,23 @@ comp.summary()
 ```
 
 ::: mcmckit.core.model_comparison.ModelComparison
+
+---
+
+## BMAResult
+
+Returned by `ModelComparison.predict()`.
+
+```python
+bma = comp.predict(
+    forward_models={"M1": fwd_m1, "M2": fwd_m2},
+    n_eval=1000,
+)
+bma.mean()          # BMA mean prediction
+bma.std()           # BMA std
+bma.decompose()     # per-model weight, mean, std
+bma.plot_bands()    # credible band
+bma.plot_decompose() # line width ∝ model weight
+```
+
+::: mcmckit.core.model_comparison.BMAResult
