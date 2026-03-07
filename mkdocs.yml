@@ -48,6 +48,7 @@ nav:
       - Problem: api/problem.md
       - Result: api/result.md
       - GaussianNoiseLikelihood: api/noise.md
+      - HierarchicalProblem: api/hierarchical.md
       - Model comparison: api/model_comparison.md
       - Diagnostics: api/diagnostics.md
       - Multi-chain: api/multichain.md
