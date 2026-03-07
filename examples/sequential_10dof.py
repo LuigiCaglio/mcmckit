@@ -31,7 +31,7 @@ rng = np.random.default_rng(42)
 # System definition
 # ---------------------------------------------------------------------------
 N_FLOORS = 10
-N_MODES_OBS = 10     # observe all modes (fully determined with tight prior)
+N_MODES_OBS = 7      # how many modes we observe (out of 10)
 N_REPS = 6           # repeated frequency measurements per campaign per mode
 SIGMA_OBS = 0.03     # rad/s
 
@@ -76,8 +76,7 @@ print()
 def log_prior_flat(theta):
     if np.any(theta <= 0):
         return -np.inf
-    # Lognormal centred on 10 N/m, sigma=0.5 in log-space (~factor-of-2 range)
-    return float(np.sum(-0.5 * ((np.log(theta) - np.log(10.0)) / 0.5) ** 2))
+    return float(np.sum(-0.5 * ((np.log(theta) - np.log(10.0)) / 2.0) ** 2))
 
 
 # ---------------------------------------------------------------------------
@@ -263,6 +262,33 @@ try:
     ax2.legend(fontsize=8)
 
     plt.tight_layout()
+    plt.show()
+
+    # ------------------------------------------------------------------
+    # Corner plot — full 10x10, scatter style (fast)
+    # ------------------------------------------------------------------
+    fig2 = r2.plot_corner(
+        style="scatter",
+        true_values=TRUE_K,
+        title="Campaign 2 posterior — all 10 stiffnesses (scatter)",
+        scatter_kwargs={"s": 0.4, "alpha": 0.12, "color": "steelblue"},
+    )
+    plt.show()
+
+    # ------------------------------------------------------------------
+    # Corner plot — 4-parameter subset, full style with KDE contours
+    # Zoom in on the two soft floors (k3=8, k7=8) and their neighbours
+    # ------------------------------------------------------------------
+    subset = r2.select(["k2", "k3", "k7", "k8"])
+    true_sub = TRUE_K[[1, 2, 6, 7]]   # k2, k3, k7, k8
+
+    fig3 = subset.plot_corner(
+        style="full",
+        true_values=true_sub,
+        title="Campaign 2 — subset: soft floors (k3, k7) and neighbours (k2, k8)",
+        kde_kwargs={"levels": 5, "cmap": "Blues"},
+        scatter_kwargs={"s": 1, "alpha": 0.2, "color": "steelblue"},
+    )
     plt.show()
 
 except ImportError:

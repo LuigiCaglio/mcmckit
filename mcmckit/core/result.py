@@ -74,6 +74,37 @@ class Result:
     def quantile(self, q):
         return np.quantile(self.samples, q, axis=0)
 
+    def select(self, indices):
+        """Return a new Result containing only a subset of parameters.
+
+        Parameters
+        ----------
+        indices : array-like of int or str
+            Parameter indices (int) or names (str) to keep.
+
+        Returns
+        -------
+        Result
+
+        Examples
+        --------
+        ::
+
+            r_sub = result.select([0, 2, 6, 9])          # by index
+            r_sub = result.select(["k1", "k3", "k7"])    # by name
+        """
+        idx = []
+        for i in indices:
+            if isinstance(i, str):
+                if self.param_names is None:
+                    raise ValueError("param_names not set; use integer indices.")
+                idx.append(self.param_names.index(i))
+            else:
+                idx.append(int(i))
+        names = [self.param_names[i] for i in idx] if self.param_names else None
+        return Result(self.samples[:, idx], self.log_posteriors,
+                      param_names=names, acceptance_rate=self.acceptance_rate)
+
     def discard(self, n):
         """Return a new Result with the first n samples removed (burn-in).
 
