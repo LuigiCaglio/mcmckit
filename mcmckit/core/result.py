@@ -92,6 +92,84 @@ class Result:
         )
 
     # ------------------------------------------------------------------
+    # Diagnostics
+    # ------------------------------------------------------------------
+
+    def ess(self):
+        """Effective sample size per parameter.
+
+        Returns
+        -------
+        np.ndarray, shape (n_params,)
+
+        See Also
+        --------
+        mcmckit.core.diagnostics.ess
+        """
+        from .diagnostics import ess as _ess
+        return _ess(self.samples)
+
+    def autocorr(self, max_lag=100):
+        """Normalised autocorrelation function for each parameter.
+
+        Parameters
+        ----------
+        max_lag : int
+            Maximum lag to compute.
+
+        Returns
+        -------
+        np.ndarray, shape (max_lag + 1, n_params)
+
+        See Also
+        --------
+        mcmckit.core.diagnostics.autocorr
+        """
+        from .diagnostics import autocorr as _autocorr
+        return _autocorr(self.samples, max_lag=max_lag)
+
+    def plot_autocorr(self, max_lag=100, title=None):
+        """Plot the autocorrelation function for each parameter.
+
+        Parameters
+        ----------
+        max_lag : int
+            Maximum lag to display.
+        title : str, optional
+
+        Returns
+        -------
+        matplotlib Figure
+        """
+        import matplotlib.pyplot as plt
+
+        acf = self.autocorr(max_lag=max_lag)
+        lags = np.arange(acf.shape[0])
+        n_params = acf.shape[1]
+        names = self.param_names or [f"theta[{i}]" for i in range(n_params)]
+
+        ncols = min(n_params, 3)
+        nrows = (n_params + ncols - 1) // ncols
+        fig, axes = plt.subplots(nrows, ncols, figsize=(4 * ncols, 2.5 * nrows),
+                                 squeeze=False, constrained_layout=True)
+        axes_flat = axes.flatten()
+
+        for i in range(n_params):
+            ax = axes_flat[i]
+            ax.bar(lags, acf[:, i], width=1.0, color="steelblue", alpha=0.7)
+            ax.axhline(0, color="black", lw=0.8)
+            ax.set_xlabel("lag")
+            ax.set_ylabel("ACF")
+            ax.set_title(names[i])
+
+        for j in range(n_params, len(axes_flat)):
+            axes_flat[j].set_visible(False)
+
+        if title is not None:
+            fig.suptitle(title)
+        return fig
+
+    # ------------------------------------------------------------------
     # Visualisation (requires matplotlib)
     # ------------------------------------------------------------------
 

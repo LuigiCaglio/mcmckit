@@ -42,11 +42,14 @@ nav:
       - Noise estimation: examples/noise.md
       - Structural identification: examples/structural.md
       - Model class selection: examples/model_comparison.md
+      - Diagnostics & multi-chain: examples/diagnostics.md
   - API Reference:
       - Problem: api/problem.md
       - Result: api/result.md
       - GaussianNoiseLikelihood: api/noise.md
       - Model comparison: api/model_comparison.md
+      - Diagnostics: api/diagnostics.md
+      - Multi-chain: api/multichain.md
       - Samplers:
           - MetropolisHastings: api/samplers/mh.md
           - MALA: api/samplers/mala.md

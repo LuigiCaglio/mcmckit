@@ -138,6 +138,51 @@ In the marginalised case, each channel has an independent InvGamma prior and is 
 
 ---
 
+## Convergence diagnostics
+
+### Effective sample size
+
+MCMC samples are correlated, so $N$ samples are worth fewer than $N$
+independent draws.  The **effective sample size** (ESS) quantifies this:
+
+$$\text{ESS} = \frac{N}{1 + 2\sum_{k=1}^{\infty} \rho_k}$$
+
+where $\rho_k$ is the autocorrelation at lag $k$.  The sum is truncated using
+Geyer's (1992) initial positive sequence criterion to avoid noise blow-up at
+large lags.
+
+### Autocorrelation
+
+The normalised autocorrelation at lag $k$ for a scalar chain $\{\theta_t\}$ is:
+
+$$\rho_k = \frac{\sum_{t=1}^{N-k}(\theta_t - \bar\theta)(\theta_{t+k} - \bar\theta)}{\sum_{t=1}^{N}(\theta_t - \bar\theta)^2}$$
+
+Computed via FFT for efficiency.  Slow decay (high autocorrelation at large lags)
+indicates poor mixing — increase the proposal covariance or run longer.
+
+### Gelman-Rubin $\hat{R}$
+
+Given $M$ independent chains of length $N$, split each chain in half to obtain
+$2M$ sub-chains.  Define the between-chain variance $B$ and within-chain
+variance $W$:
+
+$$B = \frac{N}{2M-1}\sum_{m=1}^{2M}(\bar\theta_m - \bar\theta)^2, \qquad
+  W = \frac{1}{2M}\sum_{m=1}^{2M} s_m^2$$
+
+The pooled variance estimate is:
+
+$$\widehat{\text{var}} = \frac{N-1}{N} W + \frac{B}{N}$$
+
+and the statistic is:
+
+$$\hat{R} = \sqrt{\frac{\widehat{\text{var}}}{W}}$$
+
+$\hat{R} \approx 1$ means all chains sample the same distribution.
+A common threshold is $\hat{R} < 1.01$.  The split-chain variant (Vehtari
+et al., 2021) also detects non-stationarity within a single chain.
+
+---
+
 ## Model class selection
 
 ### The evidence as a model score
