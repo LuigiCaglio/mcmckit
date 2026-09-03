@@ -1,4 +1,5 @@
 site_name: mcmckit
+site_url: https://luigicaglio.github.io/mcmckit/
 site_description: Lightweight Bayesian model updating with MCMC for engineering applications
 site_author: Luigi Caglio
 docs_dir: docs
