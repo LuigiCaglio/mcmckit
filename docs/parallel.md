@@ -57,9 +57,10 @@ def log_likelihood(theta): ...
 problem = mc.Problem(prior=log_prior, likelihood=log_likelihood)
 ```
 
-mcmckit checks this before starting, so you get a clear message rather than a
-pickling traceback from inside the executor. With the default `backend="auto"`
-an unpicklable likelihood quietly falls back to threads instead of failing.
+mcmckit checks this before starting, so you get a clear message naming the likely
+cause rather than a pickling traceback from inside the executor. It refuses to
+run instead of silently switching to threads, which would be unsafe for a solver
+that keeps global state.
 
 ## Backends
 
@@ -72,13 +73,14 @@ mc.TMCMC(n_particles=1000, n_workers=4, backend="process")
     because the GIL otherwise serialises it. Needs a picklable likelihood.
 
 `"thread"`
-:   Threads. No pickling, no start-up cost, but only helps when the likelihood
-    spends its time in code that releases the GIL — NumPy/SciPy linear algebra,
-    or an external solver called through a C extension or subprocess. Much
-    finite element work qualifies.
+:   Threads. No pickling, no start-up cost, but it helps only when the
+    likelihood releases the GIL, and it is **unsafe for any solver that keeps
+    global state**. See the OpenSeesPy section below.
 
 `"auto"` (default)
-:   Processes when the likelihood is picklable, threads when it is not.
+:   Processes when the likelihood is picklable. When it is not, `auto` **raises**
+    rather than quietly switching to threads — it cannot know whether your
+    likelihood is thread-safe, and guessing wrong corrupts results silently.
 
 ## Expected speedup
 
@@ -118,3 +120,67 @@ serial and parallel runs agree exactly.
 `run_chains` with `n_workers > 1` is **not** reproducible that way: each worker
 process seeds its own stream. Use `n_workers=1` when you need bit-for-bit
 repeatability.
+
+## Black-box solvers: OpenSeesPy and friends
+
+This is the normal case in structural model updating — the likelihood builds and
+solves a finite element model, and mcmckit only ever calls it. It works, with one
+rule: **use processes, never threads.**
+
+OpenSeesPy keeps a *single global model domain*. `ops.model(...)` in two threads
+at once means both are writing the same model. Measured on a 6-storey shear
+building, the thread backend raised `OpenSeesError` on one run and segfaulted the
+interpreter on another — a nondeterministic failure, the worst kind to debug.
+Separate processes each get their own domain, so they cannot interfere.
+
+With `backend="process"` the same model updating gave **bit-identical** posterior
+means and log-evidence at 1, 4 and 8 workers. `examples/openseespy_parallel.py`
+is the full runnable case.
+
+The pattern:
+
+```python
+import numpy as np
+import openseespy.opensees as ops
+import mcmckit as mc
+
+F_OBS = ...                      # module level: every worker gets it on import
+
+def build_and_eigen(scale):
+    ops.wipe()                   # tear the global domain down every call
+    ops.model("basic", "-ndm", 1, "-ndf", 1)
+    ...
+    frequencies = ops.eigen("-fullGenLapack", n_modes)
+    ops.wipe()
+    return frequencies
+
+def log_likelihood(theta):       # module level, so it pickles
+    return -0.5 * np.sum(((build_and_eigen(theta) - F_OBS) / sigma) ** 2)
+
+PROBLEM = mc.Problem(prior=log_prior, likelihood=log_likelihood)
+
+if __name__ == "__main__":       # required
+    result = mc.TMCMC(n_particles=400, n_workers=4, backend="process").run(
+        PROBLEM, prior_samples=ps
+    )
+```
+
+Four things to get right:
+
+1. **`ops.wipe()` at both ends of the forward model.** The domain is global and
+   persists between calls, so a model that is not torn down leaks into the next
+   evaluation.
+2. **Module-level likelihood**, so it can be pickled to the workers.
+3. **Module-level data** (`F_OBS` above). Each worker imports the module, so
+   anything defined there is available without being sent per call.
+4. **The `__main__` guard**, or every worker re-runs your script.
+
+If you already parallelise OpenSeesPy with `joblib.Parallel`, this is the same
+mechanism — joblib's default `loky` backend is process-based for exactly this
+reason.
+
+!!! tip "Is your model big enough to be worth it?"
+    Time a single likelihood call first. The example model solves in ~2 ms and
+    is *slower* with 4 workers, because dispatching costs more than the solve.
+    Workers start paying once one evaluation takes tens of milliseconds — a
+    nonlinear time history rather than a handful of eigenvalues.

@@ -24,14 +24,19 @@ Backends
     which rules out lambdas and closures - see :func:`check_picklable`.
 
 ``"thread"``
-    Threads. No pickling and no process start-up cost, but only helps when the
-    likelihood spends its time in code that releases the GIL: NumPy/SciPy linear
-    algebra, or an external solver called through a subprocess or C extension.
-    That covers most finite element work, and on Windows it avoids the cost of
-    re-importing the main module for every worker.
+    Threads. No pickling and no process start-up cost, but it helps only when
+    the likelihood releases the GIL, and it is **unsafe for any solver that
+    keeps global state**. OpenSeesPy is the obvious example: it holds a single
+    global model domain, so concurrent threads overwrite each other's model.
+    Measured, that produces an ``OpenSeesError`` on a good day and a
+    segmentation fault on a bad one. Never select it for a solver like that.
+    It is the right choice only for a re-entrant, GIL-releasing likelihood.
 
 ``"auto"``
-    ``"process"`` if the callable is picklable, otherwise ``"thread"``.
+    ``"process"`` when the callable is picklable. When it is not, ``auto``
+    **raises** rather than quietly falling back to threads, because it cannot
+    know whether the likelihood is thread-safe and guessing wrong corrupts
+    results silently.
 """
 
 from __future__ import annotations
@@ -126,15 +131,29 @@ class WorkerPool:
         if backend == "auto":
             if func is None or check_picklable(func):
                 return "process"
-            return "thread"
+            raise ValueError(
+                "n_workers > 1 needs a picklable log-likelihood so it can be "
+                "sent to worker processes, and this one cannot be pickled. It "
+                "is probably a lambda, a closure, or defined inside another "
+                "function.\n\n"
+                "Move it to module level:\n"
+                "    def log_likelihood(theta):\n"
+                "        ...\n"
+                "    problem = mc.Problem(prior=log_prior, likelihood=log_likelihood)\n\n"
+                "Only if the likelihood is genuinely thread-safe and releases "
+                "the GIL may you pass backend='thread' instead. Do NOT do that "
+                "for a solver holding global state: OpenSeesPy keeps one global "
+                "model domain, and running it in threads corrupts the model or "
+                "crashes the interpreter."
+            )
         if backend == "process" and func is not None and not check_picklable(func):
             raise ValueError(
-                "backend='process' needs a picklable log-likelihood, and this one "
-                "cannot be pickled. This usually means it is a lambda, a closure, "
-                "or defined inside another function. Either move it to module "
-                "level, or pass backend='thread' (which needs no pickling and "
-                "still helps when the likelihood spends its time in NumPy or an "
-                "external solver)."
+                "backend='process' needs a picklable log-likelihood, and this "
+                "one cannot be pickled. It is probably a lambda, a closure, or "
+                "defined inside another function. Move it to module level:\n"
+                "    def log_likelihood(theta):\n"
+                "        ...\n"
+                "    problem = mc.Problem(prior=log_prior, likelihood=log_likelihood)"
             )
         return backend
 

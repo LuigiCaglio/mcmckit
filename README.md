@@ -109,12 +109,16 @@ if __name__ == "__main__":                      # required: workers re-import th
 are parallelised; a single chain is sequential by construction and is not.
 
 Process workers pickle your likelihood, so it must be a module-level function
-rather than a lambda or closure — `backend="auto"` falls back to threads when it
-is not. TMCMC gives bit-identical results with and without workers.
+rather than a lambda or closure; mcmckit says so clearly instead of failing deep
+inside the executor. TMCMC gives bit-identical results with and without workers.
 
 On a 14-core machine with a ~4 ms likelihood: 2.60x on 4 workers, 3.36x on 8.
-See [the docs](docs/parallel.md) for backends, reproducibility and the thread
-oversubscription note.
+
+Black-box solvers work — `examples/openseespy_parallel.py` updates a 6-storey
+shear building through OpenSeesPy and gets bit-identical results at 1, 4 and 8
+workers. Use **processes, not threads**, for any solver with global state:
+OpenSeesPy keeps one global model domain, and threading it raises `OpenSeesError`
+or segfaults. See [the docs](docs/parallel.md).
 
 ## Visualisation
 

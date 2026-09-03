@@ -81,9 +81,21 @@ def test_auto_picks_processes_for_a_picklable_likelihood():
     assert WorkerPool(n_workers=2, backend="auto", func=log_likelihood).backend == "process"
 
 
-def test_auto_falls_back_to_threads_for_a_lambda():
-    """A lambda cannot be pickled, so 'auto' must not choose processes."""
-    assert WorkerPool(n_workers=2, backend="auto", func=lambda t: 0.0).backend == "thread"
+def test_auto_refuses_an_unpicklable_likelihood_rather_than_using_threads():
+    """Silently switching to threads would be unsafe for a stateful solver.
+
+    OpenSeesPy keeps one global model domain, so running it under threads
+    corrupts the model or crashes the interpreter. 'auto' cannot tell whether a
+    likelihood is thread-safe, so it must refuse rather than guess.
+    """
+    with pytest.raises(ValueError, match="picklable"):
+        WorkerPool(n_workers=2, backend="auto", func=lambda t: 0.0)
+
+
+def test_threads_remain_available_when_asked_for_explicitly():
+    """Opting in is still allowed - the user is asserting thread safety."""
+    pool = WorkerPool(n_workers=2, backend="thread", func=lambda t: 0.0)
+    assert pool.backend == "thread"
 
 
 def test_explicit_process_backend_rejects_an_unpicklable_likelihood():
