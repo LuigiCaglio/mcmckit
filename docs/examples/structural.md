@@ -1,6 +1,6 @@
 # Structural identification
 
-Source: [`examples/structural_identification.py`](https://github.com/your-username/mcmckit/blob/main/examples/structural_identification.py)
+Source: [`examples/structural_identification.py`](https://github.com/LuigiCaglio/mcmckit/blob/master/examples/structural_identification.py)
 
 Identify stiffness values of a 2-DOF mass-spring system from noisy natural frequency measurements.
 

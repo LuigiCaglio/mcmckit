@@ -1,6 +1,6 @@
 # Noise estimation
 
-Source: [`examples/noise_estimation.py`](https://github.com/your-username/mcmckit/blob/main/examples/noise_estimation.py)
+Source: [`examples/noise_estimation.py`](https://github.com/LuigiCaglio/mcmckit/blob/master/examples/noise_estimation.py)
 
 `GaussianNoiseLikelihood` wraps a forward model and observed data into a log-likelihood function, handling measurement noise in three ways.
 

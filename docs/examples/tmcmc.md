@@ -1,6 +1,6 @@
 # TMCMC
 
-Source: [`examples/tmcmc_and_gibbs.py`](https://github.com/your-username/mcmckit/blob/main/examples/tmcmc_and_gibbs.py)
+Source: [`examples/tmcmc_and_gibbs.py`](https://github.com/LuigiCaglio/mcmckit/blob/master/examples/tmcmc_and_gibbs.py)
 
 TMCMC is the recommended sampler when you need:
 

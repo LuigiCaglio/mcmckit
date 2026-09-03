@@ -1,6 +1,6 @@
 # Adaptive samplers
 
-Source: [`examples/adaptive_samplers.py`](https://github.com/your-username/mcmckit/blob/main/examples/adaptive_samplers.py)
+Source: [`examples/adaptive_samplers.py`](https://github.com/LuigiCaglio/mcmckit/blob/master/examples/adaptive_samplers.py)
 
 Comparison of all adaptive samplers starting from a **deliberately bad** initial proposal covariance.
 

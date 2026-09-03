@@ -149,6 +149,7 @@ result.plot_corner(style="corner", true_values=[2.0, -1.0])
 | `examples/model_averaging.py` | Posterior model averaging |
 | `examples/sequential.py` | Sequential / online updating with `PosteriorPrior` |
 | `examples/sequential_10dof.py` | 10-parameter sequential structural identification |
+| `examples/openseespy_parallel.py` | Black-box OpenSeesPy forward model, run in parallel |
 
 ## Citing
 

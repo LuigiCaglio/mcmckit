@@ -31,7 +31,7 @@ pip install mcmckit[docs]      # + MkDocs for building these docs
 Development install:
 
 ```bash
-git clone https://github.com/your-username/mcmckit
+git clone https://github.com/LuigiCaglio/mcmckit
 cd mcmckit
 pip install -e ".[dev,plot]"
 ```

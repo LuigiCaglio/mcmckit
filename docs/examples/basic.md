@@ -1,6 +1,6 @@
 # Basic MH & MALA
 
-Source: [`examples/simple_gaussian.py`](https://github.com/your-username/mcmckit/blob/main/examples/simple_gaussian.py) and [`examples/mala_vs_mh.py`](https://github.com/your-username/mcmckit/blob/main/examples/mala_vs_mh.py)
+Source: [`examples/simple_gaussian.py`](https://github.com/LuigiCaglio/mcmckit/blob/master/examples/simple_gaussian.py) and [`examples/mala_vs_mh.py`](https://github.com/LuigiCaglio/mcmckit/blob/master/examples/mala_vs_mh.py)
 
 ---
 

@@ -14,6 +14,9 @@ from .samplers.dram import DRAM
 from .samplers.adaptive_mala import AdaptiveMALA
 from .samplers.tmcmc import TMCMC
 from .samplers.gibbs import Gibbs
+from .core.parallel import WorkerPool
+
+__version__ = "0.2.0"
 
 __all__ = [
     "Problem", "Result", "PosteriorPredictive",
@@ -22,4 +25,6 @@ __all__ = [
     "ess", "autocorr", "gelman_rubin", "convergence_summary",
     "MultiChainResult", "run_chains", "PosteriorPrior",
     "MetropolisHastings", "MALA", "RAM", "DRAM", "AdaptiveMALA", "TMCMC", "Gibbs",
+    "WorkerPool",
+    "__version__",
 ]

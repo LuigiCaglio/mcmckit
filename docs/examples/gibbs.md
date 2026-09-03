@@ -1,6 +1,6 @@
 # Gibbs sampling
 
-Source: [`examples/tmcmc_and_gibbs.py`](https://github.com/your-username/mcmckit/blob/main/examples/tmcmc_and_gibbs.py)
+Source: [`examples/tmcmc_and_gibbs.py`](https://github.com/LuigiCaglio/mcmckit/blob/master/examples/tmcmc_and_gibbs.py)
 
 Gibbs is useful when parameters have very different scales or are weakly coupled, and you want per-parameter tuning of the proposal.
 
