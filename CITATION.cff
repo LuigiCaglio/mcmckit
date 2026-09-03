@@ -1,0 +1,28 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+title: "mcmckit: lightweight Bayesian model updating with MCMC"
+abstract: >-
+  mcmckit provides a compact, dependency-light set of MCMC samplers for Bayesian
+  model updating and inverse problems in engineering, with an emphasis on
+  structural dynamics and structural health monitoring. It includes random-walk
+  Metropolis-Hastings, MALA and adaptive MALA, RAM, DRAM, Metropolis-within-Gibbs
+  and Transitional MCMC (TMCMC) with log-evidence estimation, together with
+  utilities for modal likelihoods, noise estimation, hierarchical models,
+  sequential updating, model comparison and convergence diagnostics.
+type: software
+authors:
+  - family-names: Caglio
+    given-names: Luigi
+    # orcid: "https://orcid.org/0000-0000-0000-0000"   # TODO: add your ORCID
+version: 0.1.0
+date-released: "2026-09-03"
+license: MIT
+repository-code: "https://github.com/LuigiCaglio/mcmckit"
+keywords:
+  - Bayesian inference
+  - MCMC
+  - model updating
+  - structural dynamics
+  - structural health monitoring
+  - inverse problems
+  - TMCMC

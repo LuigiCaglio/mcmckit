@@ -12,7 +12,7 @@ pip install mcmckit[plot]     # + matplotlib for plots
 For development:
 
 ```bash
-git clone https://github.com/your-username/mcmckit
+git clone https://github.com/LuigiCaglio/mcmckit
 cd mcmckit
 pip install -e ".[dev,plot]"
 ```
@@ -114,6 +114,20 @@ result.plot_corner(style="corner", true_values=[2.0, -1.0])
 | `examples/ram_example.py` | RAM self-tuning from bad initial covariance |
 | `examples/adaptive_samplers.py` | MH / RAM / DRAM / AdaptiveMALA comparison |
 | `examples/tmcmc_and_gibbs.py` | TMCMC stages + Gibbs scalar/block |
+| `examples/diagnostics_multichain.py` | Multi-chain runs, R-hat and ESS diagnostics |
+| `examples/noise_estimation.py` | Inferring measurement noise alongside parameters |
+| `examples/structural_identification.py` | Stiffness identification from modal data |
+| `examples/modal_likelihood.py` | `ModalLikelihood` with frequencies + mode shapes |
+| `examples/hierarchical_updating.py` | Hierarchical models across multiple structures |
+| `examples/model_comparison.py` | Bayes factors from TMCMC log-evidence |
+| `examples/model_averaging.py` | Posterior model averaging |
+| `examples/sequential.py` | Sequential / online updating with `PosteriorPrior` |
+| `examples/sequential_10dof.py` | 10-parameter sequential structural identification |
+
+## Citing
+
+If you use mcmckit in academic work, please cite it. See `CITATION.cff`, or use
+the DOI minted for the release you used.
 
 ## Requirements
 
