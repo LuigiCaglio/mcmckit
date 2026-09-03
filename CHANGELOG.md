@@ -33,6 +33,22 @@ All notable changes to mcmckit are documented here.
     ESS must be bounded by the sample count.
   - Parallel results must match serial.
 
+### Removed
+- **`ModalLikelihood`.** It was structural model-updating machinery - forward
+  models, mode pairing, per-mode noise - inside what is otherwise a
+  general-purpose sampling library, and nothing else in the package imported it.
+  Its `mac_matrix` helper survives as `mcmckit.mac` / `mcmckit.mac_matrix` in
+  the new `core/similarity` module, which is domain-neutral: a squared
+  normalised inner product, invariant to sign and scale. Use
+  `GaussianNoiseLikelihood`, or a plain function, to build a modal likelihood on
+  top of mcmckit rather than inside it.
+  - The helper now handles **complex** vectors with the conjugate inner
+    product. The old code cast to `float`, which discarded the imaginary part
+    of a complex mode shape with only a warning and returned a wrong number.
+  - `examples/modal_likelihood.py` and its documentation page were removed with
+    it. `examples/structural_identification.py` still shows stiffness
+    identification from modal data, built on the general API.
+
 ### Fixed
 - **`TMCMC(n_workers=...)` was slower than running serially.** It built a fresh
   `ProcessPoolExecutor` on every call to `_eval_log_likelihoods` - once per

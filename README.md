@@ -143,7 +143,6 @@ result.plot_corner(style="corner", true_values=[2.0, -1.0])
 | `examples/diagnostics_multichain.py` | Multi-chain runs, R-hat and ESS diagnostics |
 | `examples/noise_estimation.py` | Inferring measurement noise alongside parameters |
 | `examples/structural_identification.py` | Stiffness identification from modal data |
-| `examples/modal_likelihood.py` | `ModalLikelihood` with frequencies + mode shapes |
 | `examples/hierarchical_updating.py` | Hierarchical models across multiple structures |
 | `examples/model_comparison.py` | Bayes factors from TMCMC log-evidence |
 | `examples/model_averaging.py` | Posterior model averaging |
