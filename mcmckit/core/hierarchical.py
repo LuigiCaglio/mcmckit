@@ -49,7 +49,9 @@ class HierarchicalProblem:
         ``group_prior(theta_j, phi)``.
     group_likelihoods : list of callable
         One callable per group: ``log p(y_j | theta_j) -> float``.
-        If a single callable is given it is broadcast to all J groups.
+        Must be a list, one entry per group; the number of groups is taken from
+        its length. A bare callable is rejected rather than broadcast, since
+        sharing one likelihood across every group is almost always a mistake.
     n_hyper : int
         Dimension of ``phi``.
     n_group : int

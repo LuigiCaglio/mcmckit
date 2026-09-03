@@ -69,7 +69,15 @@ class Result:
         return np.std(self.samples, axis=0)
 
     def cov(self):
-        return np.cov(self.samples.T)
+        """Posterior covariance, always shape ``(n_params, n_params)``.
+
+        ``np.cov`` collapses to a 0-d scalar for a single parameter, which makes
+        ``result.cov()[0, 0]`` raise and stops the result being passed straight
+        to a sampler's ``initial_cov``. Keep it 2-D so one-parameter problems
+        behave like every other size.
+        """
+        c = np.cov(self.samples.T)
+        return np.atleast_2d(c)
 
     def quantile(self, q):
         return np.quantile(self.samples, q, axis=0)

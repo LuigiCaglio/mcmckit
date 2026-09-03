@@ -32,6 +32,27 @@ All notable changes to mcmckit are documented here.
   - Gelman-Rubin must call converged chains converged and unmixed chains not;
     ESS must be bounded by the sample count.
   - Parallel results must match serial.
+  - `bayes_factor`: the arithmetic, the Jeffreys labels and their boundaries,
+    overflow on enormous evidence ratios, and one end-to-end check where two
+    conjugate models have analytic evidences so the Bayes factor is known.
+  - `PosteriorPrior`: that it is a properly normalised density (checked against
+    `scipy.stats` and by integrating it), and the property sequential updating
+    exists for - updating on two batches in turn lands where updating on both
+    at once does, against the conjugate closed form.
+  - `HierarchicalProblem`: the parameter-vector layout round-trips, the joint
+    density decomposes correctly, and sampling it reproduces the analytic
+    population posterior and the analytic shrinkage factor
+    `tau^2 / (tau^2 + s^2)`.
+
+### Fixed
+- **`Result.cov()` collapsed to a 0-d scalar for a single-parameter problem.**
+  `mean()` and `std()` return shape `(n_params,)` at every size, but `np.cov`
+  drops to a scalar in one dimension, so `result.cov()[0, 0]` raised an
+  `IndexError` and the result could not be handed to a sampler's `initial_cov`.
+  It is now always `(n_params, n_params)`.
+- `HierarchicalProblem` documented that a single callable passed as
+  `group_likelihoods` would be broadcast to all groups. The code rejects it. The
+  docstring now matches the behaviour.
 
 ### Removed
 - **`ModalLikelihood`.** It was structural model-updating machinery - forward
