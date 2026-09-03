@@ -1,6 +1,6 @@
 import numpy as np
-from concurrent.futures import ProcessPoolExecutor
 
+from ..core.parallel import WorkerPool, resolve_n_workers
 from ..core.result import Result
 
 
@@ -56,13 +56,16 @@ class TMCMC:
         target_ess_ratio=0.5,
         n_workers=1,
         cov_scale=None,
+        backend="auto",
     ):
         self.n_particles = n_particles
         self.n_mcmc_steps = n_mcmc_steps
         self.target_ess_ratio = target_ess_ratio
-        self.n_workers = n_workers
+        self.n_workers = resolve_n_workers(n_workers)
+        self.backend = backend
         self._cov_scale = cov_scale
         self._initialized = False
+        self._pool = None
 
     # ------------------------------------------------------------------
     # Setup
@@ -175,9 +178,22 @@ class TMCMC:
         Result
             Posterior samples with ``result.log_evidence`` set.
         """
-        self.initialize_with_samples(problem, prior_samples)
-        while self._beta < 1.0:
-            self.run_stage()
+        pool = WorkerPool(
+            n_workers=self.n_workers,
+            backend=self.backend,
+            func=problem.log_likelihood,
+        )
+        # One pool for the whole run. Rebuilding it per stage costs far more
+        # than it saves, especially on Windows where each worker re-imports the
+        # calling module.
+        with pool:
+            self._pool = pool
+            try:
+                self.initialize_with_samples(problem, prior_samples)
+                while self._beta < 1.0:
+                    self.run_stage()
+            finally:
+                self._pool = None
         return self.get_result()
 
     def get_result(self):
@@ -199,10 +215,15 @@ class TMCMC:
     # ------------------------------------------------------------------
 
     def _eval_log_likelihoods(self, particles):
-        """Evaluate log-likelihood for all particles (optionally parallel)."""
-        if self.n_workers > 1:
-            with ProcessPoolExecutor(max_workers=self.n_workers) as pool:
-                results = list(pool.map(self._problem.log_likelihood, particles))
+        """Evaluate the log-likelihood for every particle.
+
+        Uses the worker pool opened by :meth:`run` when there is one. Outside
+        that context - e.g. when driving stages by hand with
+        :meth:`run_stage` - it falls back to serial evaluation, so results are
+        identical either way.
+        """
+        if self._pool is not None:
+            results = self._pool.map(self._problem.log_likelihood, particles)
         else:
             results = [self._problem.log_likelihood(p) for p in particles]
         return np.array(results)

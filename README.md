@@ -94,6 +94,28 @@ print(f"log-evidence: {result.log_evidence:.3f}")
 tmcmc.plot_stages(max_stages=6, title="Prior → Posterior")
 ```
 
+## Parallel evaluation
+
+Opt-in, off by default. The cost in model updating is the forward model inside
+your likelihood, so mcmckit can spread those calls over cores:
+
+```python
+if __name__ == "__main__":                      # required: workers re-import the module
+    result = mc.TMCMC(n_particles=1000, n_workers=4).run(problem, prior_samples=ps)
+    multi = mc.run_chains(sampler, problem, x0, n_chains=4, n_workers=4)
+```
+
+`n_workers=-1` uses one worker per core. TMCMC particles and independent chains
+are parallelised; a single chain is sequential by construction and is not.
+
+Process workers pickle your likelihood, so it must be a module-level function
+rather than a lambda or closure — `backend="auto"` falls back to threads when it
+is not. TMCMC gives bit-identical results with and without workers.
+
+On a 14-core machine with a ~4 ms likelihood: 2.60x on 4 workers, 3.36x on 8.
+See [the docs](docs/parallel.md) for backends, reproducibility and the thread
+oversubscription note.
+
 ## Visualisation
 
 `Result` objects have built-in plotting:

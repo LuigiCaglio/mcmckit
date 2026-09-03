@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import numpy as np
 
+from .parallel import WorkerPool, resolve_n_workers
 from .result import Result
 from .diagnostics import gelman_rubin, ess, convergence_summary
 
@@ -198,12 +199,20 @@ class MultiChainResult:
 # run_chains
 # ------------------------------------------------------------------
 
+def _run_one_chain(args):
+    """Run a single chain. Module level so that process workers can pickle it."""
+    sampler, problem, start = args
+    return sampler.run(problem, x0=start)
+
+
 def run_chains(
     sampler,
     problem,
     x0,
     n_chains: int = 4,
     jitter_scale: float = 0.1,
+    n_workers: int = 1,
+    backend: str = "auto",
 ) -> MultiChainResult:
     """Run multiple independent chains and return a :class:`MultiChainResult`.
 
@@ -232,6 +241,21 @@ def run_chains(
         Number of chains.  Ignored when ``x0`` is a list of vectors.
     jitter_scale : float
         Relative jitter applied to a single ``x0``.  Default 0.1 (10%).
+    n_workers : int
+        Number of chains to run at once.  Default 1 (serial, unchanged
+        behaviour).  ``-1`` uses one worker per core.  Chains are independent,
+        so this is the cheapest parallelism in the package.
+    backend : str
+        ``'process'``, ``'thread'`` or ``'auto'``.  See
+        :mod:`mcmckit.core.parallel`.  Process workers need a picklable
+        problem, which rules out lambdas and closures; ``'auto'`` falls back to
+        threads when that is not the case.
+
+        .. note::
+           With ``backend='process'`` each worker seeds its own random stream,
+           so results are **not** reproducible from ``np.random.seed`` the way
+           the serial path is.  Use ``n_workers=1`` when you need bit-for-bit
+           reproducibility.
 
     Returns
     -------
@@ -270,10 +294,16 @@ def run_chains(
                              jitter_scale)
             starts.append(x0 + np.random.normal(0, scale, size=x0.shape))
 
-    results = []
-    for j, start in enumerate(starts):
-        chain_sampler = copy.deepcopy(sampler)
-        result = chain_sampler.run(problem, x0=start)
-        results.append(result)
+    # A fresh copy per chain so adaptation state cannot leak between them.
+    jobs = [(copy.deepcopy(sampler), problem, start) for start in starts]
+
+    n_workers = resolve_n_workers(n_workers)
+    if n_workers > 1:
+        n_workers = min(n_workers, len(jobs))     # no point in idle workers
+
+    with WorkerPool(
+        n_workers=n_workers, backend=backend, func=problem.log_likelihood
+    ) as pool:
+        results = pool.map(_run_one_chain, jobs)
 
     return MultiChainResult(results)

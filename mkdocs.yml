@@ -34,6 +34,7 @@ nav:
   - Home: index.md
   - Theory: theory.md
   - Quickstart: quickstart.md
+  - Parallel evaluation: parallel.md
   - Examples:
       - Basic MH & MALA: examples/basic.md
       - Adaptive samplers: examples/adaptive.md
@@ -55,6 +56,7 @@ nav:
       - Model comparison: api/model_comparison.md
       - Diagnostics: api/diagnostics.md
       - Multi-chain: api/multichain.md
+      - Parallel: api/parallel.md
       - PosteriorPrior: api/sequential.md
       - Samplers:
           - MetropolisHastings: api/samplers/mh.md
