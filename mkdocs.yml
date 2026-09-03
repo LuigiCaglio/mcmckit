@@ -1,9 +1,9 @@
 site_name: mcmckit
 site_description: Lightweight Bayesian model updating with MCMC for engineering applications
-site_author: Luigi
+site_author: Luigi Caglio
 docs_dir: docs
-repo_url: https://github.com/your-username/mcmckit
-repo_name: mcmckit
+repo_url: https://github.com/LuigiCaglio/mcmckit
+repo_name: LuigiCaglio/mcmckit
 
 theme:
   name: material
