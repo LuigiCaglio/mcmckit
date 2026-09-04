@@ -99,7 +99,7 @@ hproblem = mc.HierarchicalProblem(
 )
 
 print(f"Total parameters: {hproblem.n_params}  "
-      f"(2 hyper + {J} × 1 group)")
+      f"(2 hyper + {J} x 1 group)")
 
 # -----------------------------------------------------------------------
 # Initial point and proposal covariance
@@ -126,9 +126,9 @@ group_results = [hproblem.extract_group(result, j) for j in range(J)]
 sigma_k_samples = np.exp(hyper_result.samples[:, 1])
 
 print("=== Hyperparameter posterior ===")
-print(f"  mu_k      : {hyper_result.mean()[0]:.3f} ± {hyper_result.std()[0]:.3f}"
+print(f"  mu_k      : {hyper_result.mean()[0]:.3f} +/- {hyper_result.std()[0]:.3f}"
       f"  (true: {TRUE_MU_K})")
-print(f"  sigma_k   : {sigma_k_samples.mean():.3f} ± {sigma_k_samples.std():.3f}"
+print(f"  sigma_k   : {sigma_k_samples.mean():.3f} +/- {sigma_k_samples.std():.3f}"
       f"  (true: {TRUE_SIGMA_K})")
 print()
 
@@ -172,7 +172,7 @@ pp = group_results[0].posterior_predictive(
     forward_model=lambda theta: [omega(theta[0])],
     n_eval=500,
 )
-print(f"  predicted omega: {pp.mean()[0]:.4f} ± {pp.std()[0]:.4f}  "
+print(f"  predicted omega: {pp.mean()[0]:.4f} +/- {pp.std()[0]:.4f}  "
       f"(true: {omega(true_k[0]):.4f})")
 
 # -----------------------------------------------------------------------

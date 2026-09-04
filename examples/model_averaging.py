@@ -48,7 +48,7 @@ y_obs = np.concatenate([
     rng.normal(true_freqs[0], SIGMA_OBS, size=N_OBS),
     rng.normal(true_freqs[1], SIGMA_OBS, size=N_OBS),
 ])
-print(f"True frequencies: ω1={true_freqs[0]:.4f}, ω2={true_freqs[1]:.4f} rad/s")
+print(f"True frequencies: omega1={true_freqs[0]:.4f}, omega2={true_freqs[1]:.4f} rad/s")
 print()
 
 # -----------------------------------------------------------------------
@@ -130,8 +130,8 @@ bma = comp.predict(
 print(f"BMA result: {bma}")
 print()
 print("BMA posterior predictive (natural frequencies):")
-print(f"  ω1: {bma.mean()[0]:.4f} ± {bma.std()[0]:.4f}  (true: {true_freqs[0]:.4f})")
-print(f"  ω2: {bma.mean()[1]:.4f} ± {bma.std()[1]:.4f}  (true: {true_freqs[1]:.4f})")
+print(f"  omega1: {bma.mean()[0]:.4f} +/- {bma.std()[0]:.4f}  (true: {true_freqs[0]:.4f})")
+print(f"  omega2: {bma.mean()[1]:.4f} +/- {bma.std()[1]:.4f}  (true: {true_freqs[1]:.4f})")
 print()
 
 # Per-model decomposition
@@ -139,8 +139,8 @@ print("Per-model contribution:")
 dec = bma.decompose()
 for name, info in dec.items():
     print(f"  {name:<20}  w={info['weight']:.4f}"
-          f"  ω1_mean={info['mean'][0]:.4f}"
-          f"  ω2_mean={info['mean'][1]:.4f}")
+          f"  omega1_mean={info['mean'][0]:.4f}"
+          f"  omega2_mean={info['mean'][1]:.4f}")
 print()
 
 # -----------------------------------------------------------------------

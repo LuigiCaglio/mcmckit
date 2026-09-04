@@ -46,9 +46,9 @@ def natural_frequencies(k):
 
 
 omega_true = natural_frequencies(TRUE_K)
-print(f"True natural frequencies:  ω1={omega_true[0]:.4f},  ω2={omega_true[1]:.4f}  rad/s")
+print(f"True natural frequencies:  omega1={omega_true[0]:.4f},  omega2={omega_true[1]:.4f}  rad/s")
 print(f"True stiffness:  k={TRUE_K}")
-print(f"True sigma:      σ={TRUE_SIGMA}  (per channel)\n")
+print(f"True sigma:      sigma={TRUE_SIGMA}  (per channel)\n")
 
 # Flat observation vector: [ω1×N_REPEAT, ω2×N_REPEAT]
 y_obs = np.concatenate([
@@ -141,12 +141,12 @@ sigma_post_C = np.array([ll_C.posterior_sigma(s) for s in res_C.samples[::20]])
 # Summary
 # -----------------------------------------------------------------------
 w = 10
-print(f"{'Mode':>18}  {'k1':>{w}}  {'k2':>{w}}  {'k3':>{w}}  {'σ₁':>{w}}  {'σ₂':>{w}}")
+print(f"{'Mode':>18}  {'k1':>{w}}  {'k2':>{w}}  {'k3':>{w}}  {'sigma1':>{w}}  {'sigma2':>{w}}")
 print("-" * (18 + 5 * (w + 2)))
 print(f"{'True':>18}  {TRUE_K[0]:>{w}.4f}  {TRUE_K[1]:>{w}.4f}  {TRUE_K[2]:>{w}.4f}  {TRUE_SIGMA[0]:>{w}.4f}  {TRUE_SIGMA[1]:>{w}.4f}")
-print(f"{'A — fixed':>18}  {res_A.mean()[0]:>{w}.4f}  {res_A.mean()[1]:>{w}.4f}  {res_A.mean()[2]:>{w}.4f}  {'(fixed)':>{w}}  {'(fixed)':>{w}}")
-print(f"{'B — estimated':>18}  {res_B.mean()[0]:>{w}.4f}  {res_B.mean()[1]:>{w}.4f}  {res_B.mean()[2]:>{w}.4f}  {sigma_post_B[:,0].mean():>{w}.4f}  {sigma_post_B[:,1].mean():>{w}.4f}")
-print(f"{'C — marginalised':>18}  {res_C.mean()[0]:>{w}.4f}  {res_C.mean()[1]:>{w}.4f}  {res_C.mean()[2]:>{w}.4f}  {sigma_post_C[:,0].mean():>{w}.4f}  {sigma_post_C[:,1].mean():>{w}.4f}")
+print(f"{'A - fixed':>18}  {res_A.mean()[0]:>{w}.4f}  {res_A.mean()[1]:>{w}.4f}  {res_A.mean()[2]:>{w}.4f}  {'(fixed)':>{w}}  {'(fixed)':>{w}}")
+print(f"{'B - estimated':>18}  {res_B.mean()[0]:>{w}.4f}  {res_B.mean()[1]:>{w}.4f}  {res_B.mean()[2]:>{w}.4f}  {sigma_post_B[:,0].mean():>{w}.4f}  {sigma_post_B[:,1].mean():>{w}.4f}")
+print(f"{'C - marginalised':>18}  {res_C.mean()[0]:>{w}.4f}  {res_C.mean()[1]:>{w}.4f}  {res_C.mean()[2]:>{w}.4f}  {sigma_post_C[:,0].mean():>{w}.4f}  {sigma_post_C[:,1].mean():>{w}.4f}")
 
 # -----------------------------------------------------------------------
 # Plots

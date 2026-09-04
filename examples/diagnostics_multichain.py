@@ -43,7 +43,7 @@ y_obs = np.concatenate([
     rng.normal(true_freqs[1], SIGMA_OBS, size=N_OBS),
 ])
 
-print(f"True frequencies: ω1={true_freqs[0]:.4f}, ω2={true_freqs[1]:.4f} rad/s")
+print(f"True frequencies: omega1={true_freqs[0]:.4f}, omega2={true_freqs[1]:.4f} rad/s")
 print(f"True stiffness:   k1={TRUE_K1}, k2={TRUE_K2}")
 print()
 
@@ -95,8 +95,8 @@ print("=== Part 2: Pooled posterior ===")
 
 pooled = mc_result.pool(discard=3000)
 print(f"Pooled samples: {len(pooled.samples)}")
-print(f"  k1: {pooled.mean()[0]:.3f} ± {pooled.std()[0]:.3f}  (true: {TRUE_K1})")
-print(f"  k2: {pooled.mean()[1]:.3f} ± {pooled.std()[1]:.3f}  (true: {TRUE_K2})")
+print(f"  k1: {pooled.mean()[0]:.3f} +/- {pooled.std()[0]:.3f}  (true: {TRUE_K1})")
+print(f"  k2: {pooled.mean()[1]:.3f} +/- {pooled.std()[1]:.3f}  (true: {TRUE_K2})")
 print()
 
 # ESS on the pooled chain

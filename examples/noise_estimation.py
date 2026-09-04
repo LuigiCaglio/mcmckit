@@ -94,9 +94,9 @@ sigma_post_C_mean = np.mean([ll_C.posterior_sigma(s) for s in res_C.samples])
 print(f"{'':30s}  {'k':>10}  {'c':>10}  {'sigma':>10}")
 print("-" * 65)
 print(f"{'True':30s}  {TRUE_K:10.4f}  {TRUE_C:10.4f}  {TRUE_SIGMA:10.4f}")
-print(f"{'A — fixed sigma':30s}  {res_A.mean()[0]:10.4f}  {res_A.mean()[1]:10.4f}  {'(fixed)':>10}")
-print(f"{'B — estimated sigma':30s}  {res_B.mean()[0]:10.4f}  {res_B.mean()[1]:10.4f}  {sigma_post_B.mean():10.4f}")
-print(f"{'C — marginalised sigma':30s}  {res_C.mean()[0]:10.4f}  {res_C.mean()[1]:10.4f}  {sigma_post_C_mean:10.4f}")
+print(f"{'A - fixed sigma':30s}  {res_A.mean()[0]:10.4f}  {res_A.mean()[1]:10.4f}  {'(fixed)':>10}")
+print(f"{'B - estimated sigma':30s}  {res_B.mean()[0]:10.4f}  {res_B.mean()[1]:10.4f}  {sigma_post_B.mean():10.4f}")
+print(f"{'C - marginalised sigma':30s}  {res_C.mean()[0]:10.4f}  {res_C.mean()[1]:10.4f}  {sigma_post_C_mean:10.4f}")
 
 # -----------------------------------------------------------------------
 # Plots

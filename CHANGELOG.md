@@ -2,6 +2,25 @@
 
 All notable changes to mcmckit are documented here.
 
+## [Unreleased]
+
+### Fixed
+- **Three examples crashed on Windows.** `model_averaging.py`,
+  `diagnostics_multichain.py` and `structural_identification.py` printed Greek
+  letters and subscripts. A Windows console defaults to a legacy codepage
+  (cp1252 in western Europe), not UTF-8, so printing a character outside it
+  raises `UnicodeEncodeError` and kills the script. Printed text is now ASCII
+  throughout; comments, docstrings and matplotlib labels keep their unicode,
+  since the renderer handles it and it never reaches a console.
+
+### Added
+- CI now runs on **Windows and macOS**, not Linux alone, and covers Python
+  3.13. The bug above shipped precisely because a Linux-only matrix could not
+  see it, and the parallel module's documented Windows behaviour (workers
+  re-import the calling module) was never exercised either.
+- `tests/test_examples.py`: every example must parse, must print only ASCII,
+  and must carry a `__main__` guard if it starts worker processes.
+
 ## [0.3.0] - 2026-09-04
 
 ### Added

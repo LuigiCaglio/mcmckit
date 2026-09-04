@@ -200,7 +200,7 @@ print()
 # ---------------------------------------------------------------------------
 # Summary
 # ---------------------------------------------------------------------------
-print("Uncertainty reduction — mean posterior std over all 10 parameters:")
+print("Uncertainty reduction - mean posterior std over all 10 parameters:")
 print(f"  {'Stage':<45}  mean(std)")
 for label, r in [
     ("Campaign 0  (flat prior,      6 obs/mode)", r0),

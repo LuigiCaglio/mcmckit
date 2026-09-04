@@ -172,8 +172,8 @@ print(f"B(M2 vs M3): log10 BF = {bf32['log10_bf']:.2f}  [{bf32['evidence']}]")
 res_m2 = comp.get_result("M2: 2-DOF (correct)")
 print()
 print("=== M2 posterior ===")
-print(f"  k1: {res_m2.mean()[0]:.3f} ± {res_m2.std()[0]:.3f}  (true: {K1_TRUE})")
-print(f"  k2: {res_m2.mean()[1]:.3f} ± {res_m2.std()[1]:.3f}  (true: {K2_TRUE})")
+print(f"  k1: {res_m2.mean()[0]:.3f} +/- {res_m2.std()[0]:.3f}  (true: {K1_TRUE})")
+print(f"  k2: {res_m2.mean()[1]:.3f} +/- {res_m2.std()[1]:.3f}  (true: {K2_TRUE})")
 
 # -----------------------------------------------------------------------
 # Plots

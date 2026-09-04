@@ -178,7 +178,7 @@ print()
 # ---------------------------------------------------------------------------
 # Summary table
 # ---------------------------------------------------------------------------
-print("Summary — posterior uncertainty (std) across stages:")
+print("Summary - posterior uncertainty (std) across stages:")
 print(f"  {'Stage':<30} {'k1 std':>8}  {'k2 std':>8}")
 print(f"  {'-'*50}")
 for label, r in [

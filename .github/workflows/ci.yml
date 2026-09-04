@@ -8,10 +8,24 @@ on:
 
 jobs:
   test:
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
     strategy:
+      fail-fast: false
       matrix:
-        python-version: ["3.9", "3.10", "3.11", "3.12"]
+        # Every supported Python on Linux, plus the oldest and newest on
+        # Windows and macOS. Windows matters specifically: its console
+        # defaults to a legacy codepage rather than UTF-8, and its process
+        # start method re-imports the calling module, both of which have
+        # produced bugs a Linux-only matrix could not see.
+        os: [ubuntu-latest]
+        python-version: ["3.9", "3.10", "3.11", "3.12", "3.13"]
+        include:
+          - os: windows-latest
+            python-version: "3.9"
+          - os: windows-latest
+            python-version: "3.13"
+          - os: macos-latest
+            python-version: "3.13"
 
     steps:
       - uses: actions/checkout@v4
