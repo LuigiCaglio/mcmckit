@@ -40,6 +40,11 @@ def log_post(theta):
 
 ## The loop
 
+```python
+from mcmckit import Result, ram, ram_step
+```
+
+
 Every piece of state is explicit: position, density, adaptation factor, step
 index. Storage and stopping rules are yours.
 
@@ -54,7 +59,7 @@ freq_history = np.zeros((n_iter, N_DOF))
 n_accepted = 0
 
 for i in range(1, n_iter + 1):
-    x, logp, S, accepted, freqs = mc.ram_step(
+    x, logp, S, accepted, freqs = ram_step(
         log_post, x, logp, S, i, aux=freqs, rng=rng
     )
 
@@ -98,7 +103,7 @@ starting scale.
 A raw array wraps straight into `Result` when you want the plots:
 
 ```python
-mc.Result(samples=posterior, param_names=["k1", "k2"]).plot_corner(
+Result(samples=posterior, param_names=["k1", "k2"]).plot_corner(
     true_values=TRUE_PARAMS, title="Posterior"
 )
 ```
@@ -106,7 +111,7 @@ mc.Result(samples=posterior, param_names=["k1", "k2"]).plot_corner(
 ## The same run, handing the loop over
 
 ```python
-result = mc.ram(
+result = ram(
     lambda th: log_post(th)[0],
     x0=np.ones(n_par), n_samples=n_iter,
     initial_cov=0.05**2, param_names=["k1", "k2"],

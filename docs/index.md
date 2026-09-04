@@ -17,7 +17,7 @@ on an object, so the recursion is yours to write, stop, inspect and modify.
 
 ```python
 import numpy as np
-import mcmckit as mc
+from mcmckit import ram_step
 
 def log_post(theta):                          # your model goes here
     return -0.5 * np.sum(theta**2)
@@ -29,7 +29,7 @@ S = np.linalg.cholesky(np.eye(d) * 0.1**2)    # RAM adaptation state
 
 chain = np.zeros((10_000, d))
 for i in range(1, 10_001):
-    x, logp, S, accepted = mc.ram_step(log_post, x, logp, S, i)
+    x, logp, S, accepted = ram_step(log_post, x, logp, S, i)
 
     chain[i - 1] = x
     if i % 1000 == 0:                         # your convergence check
@@ -38,6 +38,14 @@ for i in range(1, 10_001):
 
 `ram_step` proposes, accepts or rejects, adapts the proposal covariance, and
 hands everything back. Drop it into a loop you already have.
+
+Everything is a plain module-level function, so import what you use and call
+it bare, or keep the package namespace if you prefer. Both are the same call:
+
+```python
+from mcmckit import ram_step, dram_step      # bare
+import mcmckit as mc                          # namespaced: mc.ram_step(...)
+```
 
 | Function | Threaded state | Returns |
 |---|---|---|
@@ -59,7 +67,9 @@ When you do not need control of the recursion, the full-run helpers are thin
 loops over exactly the same step functions:
 
 ```python
-result = mc.ram(log_post, x0=[0.0, 0.0], n_samples=10_000)
+from mcmckit import ram
+
+result = ram(log_post, x0=[0.0, 0.0], n_samples=10_000)
 
 print(result.mean(), result.std())
 result.discard(1000).plot_corner()

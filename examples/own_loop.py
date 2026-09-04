@@ -16,7 +16,7 @@ Run:  python examples/own_loop.py
 
 import numpy as np
 
-import mcmckit as mc
+from mcmckit import Result, ram, ram_step
 
 
 # ======================================================================
@@ -98,7 +98,7 @@ def main():
     n_accepted = 0
 
     for i in range(1, n_iter + 1):
-        x, logp, S, accepted, freqs = mc.ram_step(
+        x, logp, S, accepted, freqs = ram_step(
             log_post, x, logp, S, i, aux=freqs, rng=rng
         )
 
@@ -139,7 +139,7 @@ def main():
     # 4. The same run, handing the loop over
     # ==================================================================
     print("same problem via the full-run helper:")
-    result = mc.ram(
+    result = ram(
         lambda th: log_post(th)[0],          # helper wants just the density
         x0=np.ones(n_par),
         n_samples=n_iter,
@@ -169,7 +169,7 @@ def main():
     fig.tight_layout()
 
     # A chain you built yourself wraps straight into Result for the plots.
-    mc.Result(samples=posterior, param_names=["k1", "k2"]).plot_corner(
+    Result(samples=posterior, param_names=["k1", "k2"]).plot_corner(
         true_values=TRUE_PARAMS, title="Posterior"
     )
     plt.show()

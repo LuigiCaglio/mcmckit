@@ -18,9 +18,12 @@ out explicitly.
 
 One callable. Bigger means a better fit.
 
+Every sampler is a plain module-level function: import what you use and call
+it bare, or reach it through the namespace with `import mcmckit as mc`.
+
 ```python
 import numpy as np
-import mcmckit as mc
+from mcmckit import ram_step
 
 true_mean = np.array([2.0, -1.0])
 true_prec = np.linalg.inv([[1.0, 0.8], [0.8, 1.0]])
@@ -46,7 +49,7 @@ chain = np.zeros((10_000, 2))
 n_accepted = 0
 
 for i in range(1, 10_001):
-    x, logp, S, accepted = mc.ram_step(log_post, x, logp, S, i)
+    x, logp, S, accepted = ram_step(log_post, x, logp, S, i)
 
     chain[i - 1] = x
     n_accepted += accepted
@@ -72,7 +75,7 @@ def log_post(theta):
     freqs = my_forward_model(theta)
     return -0.5 * np.sum(((freqs - measured) / sigma)**2), freqs
 
-x, logp, S, accepted, freqs = mc.ram_step(log_post, x, logp, S, i, aux=freqs)
+x, logp, S, accepted, freqs = ram_step(log_post, x, logp, S, i, aux=freqs)
 ```
 
 ## Choosing a step function
@@ -87,30 +90,36 @@ x, logp, S, accepted, freqs = mc.ram_step(log_post, x, logp, S, i, aux=freqs)
 | `gibbs_step` | — (`blocks`, `proposal_std`) | `x, logp, accepted_per_block` |
 
 `ram_step` is the best default: it self-tunes from a rough initial scale.
-`dram_step` carries its state in a `DRAMState`, built by `mc.init_dram_state(x0)`:
+`dram_step` carries its state in a `DRAMState`, built by `init_dram_state(x0)`:
 
 ```python
-state = mc.init_dram_state(x, initial_cov=0.1)
+from mcmckit import dram_step, init_dram_state
+
+state = init_dram_state(x, initial_cov=0.1)
 for i in range(n_iter):
-    x, logp, state, accepted = mc.dram_step(log_post, x, logp, state)
+    x, logp, state, accepted = dram_step(log_post, x, logp, state)
 ```
 
 Gradient samplers take a callable returning `(log_post, grad)`:
 
 ```python
+from mcmckit import mala_step
+
 def log_post_and_grad(theta):
     diff = theta - true_mean
     return -0.5 * diff @ true_prec @ diff, -true_prec @ diff
 
 logp, grad = log_post_and_grad(x)
 for _ in range(n_iter):
-    x, logp, grad, accepted = mc.mala_step(log_post_and_grad, x, logp, grad, 0.4)
+    x, logp, grad, accepted = mala_step(log_post_and_grad, x, logp, grad, 0.4)
 ```
 
 ## Plot a chain you built yourself
 
 ```python
-result = mc.Result(samples=posterior, param_names=["x", "y"])
+from mcmckit import Result
+
+result = Result(samples=posterior, param_names=["x", "y"])
 result.plot_corner(true_values=[2.0, -1.0], title="Posterior")
 ```
 
@@ -121,8 +130,10 @@ result.plot_corner(true_values=[2.0, -1.0], title="Posterior")
 The full-run helpers are thin loops over the same step functions.
 
 ```python
-result = mc.ram(log_post, x0=[0.0, 0.0], n_samples=10_000,
-                param_names=["x", "y"])
+from mcmckit import ram
+
+result = ram(log_post, x0=[0.0, 0.0], n_samples=10_000,
+             param_names=["x", "y"])
 
 result = result.discard(2000)
 print(result.mean(), result.std(), result.acceptance_rate)
@@ -152,6 +163,8 @@ prior and a likelihood separately. Useful when you want a sampler you can
 stop and inspect, and required for TMCMC.
 
 ```python
+import mcmckit as mc
+
 problem = mc.Problem(
     prior=log_prior,
     likelihood=log_likelihood,
@@ -193,7 +206,7 @@ ll = mc.GaussianNoiseLikelihood(
 problem = mc.Problem(prior=log_prior, likelihood=ll,
                      param_names=["E", "zeta"])
 
-result = mc.dram(problem, x0=[...], n_samples=10_000)
+result = mc.dram(problem, x0=[...], n_samples=10_000)   # or: dram(problem, ...)
 
 sigma_est = ll.posterior_sigma(result.mean())
 ```
