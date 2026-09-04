@@ -100,14 +100,13 @@ chain position, so it has no single-step form and stays a class.
 ## Installation
 
 ```bash
-pip install git+https://github.com/LuigiCaglio/mcmckit.git
+pip install mcmckit            # core (numpy + scipy)
+pip install mcmckit[plot]      # + matplotlib for plots
 ```
 
-With plotting, or for development:
+For development:
 
 ```bash
-pip install "mcmckit[plot] @ git+https://github.com/LuigiCaglio/mcmckit.git"
-
 git clone https://github.com/LuigiCaglio/mcmckit
 cd mcmckit
 pip install -e ".[dev,plot]"

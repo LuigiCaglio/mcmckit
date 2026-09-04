@@ -3,7 +3,7 @@
 ## Installation
 
 ```bash
-pip install git+https://github.com/LuigiCaglio/mcmckit.git
+pip install mcmckit[plot]
 ```
 
 ---

@@ -1,6 +1,6 @@
 cff-version: 1.2.0
 message: "If you use this software, please cite it as below."
-title: "mcmckit: lightweight Bayesian model updating with MCMC"
+title: "mcmckit: minimal, plug-and-play MCMC samplers for Python"
 abstract: >-
   mcmckit provides a compact, dependency-light set of MCMC samplers for Bayesian
   model updating and inverse problems in engineering, with an emphasis on
@@ -21,7 +21,16 @@ authors:
 version: 0.3.0
 date-released: "2026-09-04"
 license: MIT
+doi: 10.5281/zenodo.22300143
 repository-code: "https://github.com/LuigiCaglio/mcmckit"
+url: "https://luigicaglio.github.io/mcmckit/"
+identifiers:
+  - type: doi
+    value: 10.5281/zenodo.22300143
+    description: Concept DOI, always resolving to the latest release
+  - type: doi
+    value: 10.5281/zenodo.22300144
+    description: DOI for version 0.3.0
 keywords:
   - Bayesian inference
   - MCMC

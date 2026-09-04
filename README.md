@@ -1,5 +1,14 @@
 # mcmckit
 
+[![CI](https://github.com/LuigiCaglio/mcmckit/actions/workflows/ci.yml/badge.svg)](https://github.com/LuigiCaglio/mcmckit/actions/workflows/ci.yml)
+[![Docs](https://github.com/LuigiCaglio/mcmckit/actions/workflows/docs.yml/badge.svg)](https://LuigiCaglio.github.io/mcmckit)
+[![PyPI](https://img.shields.io/pypi/v/mcmckit.svg)](https://pypi.org/project/mcmckit/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![Python 3.9+](https://img.shields.io/badge/python-3.9%2B-blue.svg)](https://www.python.org/downloads/)
+[![DOI](https://zenodo.org/badge/1175425786.svg)](https://doi.org/10.5281/zenodo.22300143)
+
+**[Documentation](https://LuigiCaglio.github.io/mcmckit)**
+
 Minimal, plug-and-play MCMC samplers for Python.
 
 Built for Bayesian model updating and inverse problems in engineering, where
@@ -9,7 +18,8 @@ of the way. Depends only on NumPy and SciPy.
 ## Install
 
 ```bash
-pip install git+https://github.com/LuigiCaglio/mcmckit.git
+pip install mcmckit           # core (numpy + scipy)
+pip install mcmckit[plot]     # + matplotlib for plots
 ```
 
 For development:
@@ -231,8 +241,17 @@ result.plot_corner()
 
 ## Citing
 
-If you use mcmckit in academic work, please cite it. See `CITATION.cff`, or use
-the DOI minted for the release you used.
+If you use mcmckit in academic work, please cite it:
+
+> Caglio, L. mcmckit: minimal, plug-and-play MCMC samplers for Python.
+> https://doi.org/10.5281/zenodo.22300143
+
+That DOI always resolves to the newest release. To cite the exact version you
+ran, use its own DOI from the
+[Zenodo record](https://doi.org/10.5281/zenodo.22300143); v0.3.0 is
+[10.5281/zenodo.22300144](https://doi.org/10.5281/zenodo.22300144).
+`CITATION.cff` carries the same metadata, and GitHub's "Cite this repository"
+button renders it as BibTeX or APA.
 
 ## Requirements
 
