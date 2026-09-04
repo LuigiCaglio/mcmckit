@@ -49,7 +49,7 @@ from .samplers.adaptive_mala import AdaptiveMALA
 from .samplers.tmcmc import TMCMC
 from .samplers.gibbs import Gibbs
 
-__version__ = "0.3.0"
+__version__ = "0.3.1"
 
 __all__ = [
     # step functions - you own the loop

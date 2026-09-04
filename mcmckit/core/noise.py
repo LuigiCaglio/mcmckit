@@ -220,8 +220,10 @@ class GaussianNoiseLikelihood:
             return ll
 
         # fixed or estimated
-        return float(-0.5 * np.dot(residuals / sigma_arr, residuals)
-                     - np.sum(np.log(sigma_arr)))
+        # Both residual factors must be scaled: the exponent is
+        # sum(r_i^2 / sigma_i^2), not sum(r_i^2 / sigma_i).
+        scaled = residuals / sigma_arr
+        return float(-0.5 * np.dot(scaled, scaled) - np.sum(np.log(sigma_arr)))
 
     def posterior_sigma(self, theta):
         """Posterior mean of each σᵢ given model parameters (marginalised mode).

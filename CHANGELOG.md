@@ -2,9 +2,33 @@
 
 All notable changes to mcmckit are documented here.
 
-## [Unreleased]
+## [0.3.1] - 2026-09-04
 
 ### Fixed
+- **`GaussianNoiseLikelihood` divided by sigma instead of sigma squared, so
+  fixed and estimated noise modes computed the wrong likelihood.** The
+  Gaussian exponent is `sum(r_i^2 / sigma_i^2)`, and the docstring said so,
+  but the code evaluated `np.dot(residuals / sigma, residuals)`, which scales
+  the residual once rather than twice and gives `sum(r_i^2 / sigma_i)`.
+
+  Consequences, by mode:
+
+  - **Fixed sigma**: the posterior was the wrong width whenever
+    `noise_std != 1`. Too wide for sigma below 1, too narrow above it. The
+    location of the mode was unaffected, so results looked plausible.
+  - **Estimated sigma**: seriously wrong. Maximising the broken expression
+    gives `sigma = RSS / 2n` rather than `sqrt(RSS / n)`, so the inferred
+    noise collapsed toward zero. On the package's own noise-estimation
+    example it returned 0.023 against a true 0.15.
+  - **Marginalised sigma**: unaffected. That branch computes its residual sum
+    of squares separately and correctly.
+
+  The bug is invisible at `sigma = 1`, where the two expressions coincide,
+  which is why it survived. It was present in every release to date. Anyone
+  who used fixed or estimated noise should re-run: posterior means are
+  roughly unchanged, but credible intervals and any inferred noise level are
+  not.
+
 - **Three examples crashed on Windows.** `model_averaging.py`,
   `diagnostics_multichain.py` and `structural_identification.py` printed Greek
   letters and subscripts. A Windows console defaults to a legacy codepage
@@ -14,6 +38,22 @@ All notable changes to mcmckit are documented here.
   since the renderer handles it and it never reaches a console.
 
 ### Added
+- 53 tests covering the previously thin areas, taking the suite from 156 to
+  209 and coverage from 65% to 86%:
+  - `GaussianNoiseLikelihood` (14% covered to 99%): all three noise modes
+    against closed forms. Fixed sigma must match the Gaussian log density up
+    to its constant; estimated sigma must peak at the analytic maximum
+    likelihood value; marginalised sigma must match both the Inverse-Gamma
+    formula and numerical integration over sigma. This is the pass that found
+    the bug above.
+  - `ModelComparison.weights` and `BMAResult` (19% to 65%): weights sum to
+    one, their ratio equals the evidence ratio, prior weights shift the
+    posterior odds proportionally, a 700-nat evidence gap does not overflow,
+    and the mixture predictive is wider than either component.
+  - Plotting (`result.py` 20% to 92%): every drawing method runs and produces
+    the expected axes, including all four corner styles, single-parameter
+    results, and chains with no parameter names.
+
 - CI now runs on **Windows and macOS**, not Linux alone, and covers Python
   3.13. The bug above shipped precisely because a Linux-only matrix could not
   see it, and the parallel module's documented Windows behaviour (workers

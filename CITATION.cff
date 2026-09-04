@@ -18,7 +18,7 @@ authors:
   - family-names: Caglio
     given-names: Luigi
     orcid: "https://orcid.org/0000-0002-9830-2490"
-version: 0.3.0
+version: 0.3.1
 date-released: "2026-09-04"
 license: MIT
 doi: 10.5281/zenodo.22300143
