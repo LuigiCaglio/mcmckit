@@ -2,6 +2,62 @@
 
 All notable changes to mcmckit are documented here.
 
+## [0.3.0] - 2026-09-04
+
+### Added
+- **A single-step API: `mcmckit.steps`.** Every sampler is now available as a
+  plain function that advances a chain by one step, with all state threaded in
+  and out explicitly. You write the recursion:
+
+  ```python
+  for i in range(1, n_iter + 1):
+      x, logp, S, accepted = mc.ram_step(log_post, x, logp, S, i)
+  ```
+
+  `mh_step`, `ram_step`, `dram_step`, `mala_step`, `adaptive_mala_step` and
+  `gibbs_step`. Nothing is stored on an object, so the loop, the storage, the
+  stopping rule and the checkpointing are all the caller's. This is the
+  interface the package now leads with; the sampler classes remain for
+  stop-and-inspect workflows.
+- **Full-run helpers: `mcmckit.runners`.** `metropolis`, `ram`, `dram`, `mala`,
+  `adaptive_mala` and `gibbs` are thin loops over the step functions above, so
+  both interfaces run identical code - verified by a test asserting that a
+  helper and a hand-written loop produce identical chains from the same seed.
+  They take either a bare log-posterior callable or a `Problem`.
+- **Auxiliary model output passthrough.** If the log-posterior callable returns
+  `(value, aux)`, the payload is threaded back out attached to the accepted
+  sample and passed back in via `aux=`. Natural frequencies, mode shapes or
+  residuals computed by the forward model are kept without re-running it,
+  making a posterior predictive free. A callable returning a plain float gets
+  no `aux` back, so the signature keeps its usual width.
+- `examples/own_loop.py`, the new leading example: a 3-storey shear building
+  identified from its natural frequencies in a hand-written RAM loop, with
+  auxiliary output and an early stop. Documented at `docs/examples/own_loop.md`.
+- 20 tests covering the new API, taking the suite from 104 to 124. Each step
+  function is driven from a hand-written loop and must recover the mean and
+  covariance of a correlated Gaussian; RAM must adapt away from a deliberately
+  terrible initial scale; seeded runs must be reproducible; and the auxiliary
+  payload must always correspond to the returned position.
+
+### Changed
+- **`Result.log_posteriors` is now optional**, so a chain you produced yourself
+  wraps straight into `Result` for its plots: `mc.Result(samples=chain,
+  param_names=[...])`.
+- **RAM's default adaptation decay is now `gamma=0.51`**, down from 0.7, and is
+  exposed as a keyword argument on both `ram_step` and `ram`.
+- README, `docs/index.md` and `docs/quickstart.md` lead with the single-step
+  interface, with the class interface documented after it.
+- The install instructions now give the git URL. `pip install mcmckit` was
+  documented but the package is not on PyPI.
+
+### Fixed
+- **DRAM recomputed the empirical covariance over the entire chain history at
+  every adaptation**, an O(n) cost per step and O(n^2) over a run. `dram_step`
+  carries a running mean and sum of squared deviations (Welford) in its
+  `DRAMState`, making adaptation O(d^2) per step regardless of chain length. A
+  test asserts the recursive result equals `np.cov` over the full history.
+- `site/`, the MkDocs build output, was not ignored by git.
+
 ## [0.2.0] - 2026-09-03
 
 ### Added

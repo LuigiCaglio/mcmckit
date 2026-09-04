@@ -37,6 +37,7 @@ nav:
   - Quickstart: quickstart.md
   - Parallel evaluation: parallel.md
   - Examples:
+      - Your own loop: examples/own_loop.md
       - Basic MH & MALA: examples/basic.md
       - Adaptive samplers: examples/adaptive.md
       - TMCMC: examples/tmcmc.md
@@ -48,6 +49,8 @@ nav:
       - Diagnostics & multi-chain: examples/diagnostics.md
       - Sequential updating: examples/sequential.md
   - API Reference:
+      - Step functions: api/steps.md
+      - Full-run helpers: api/runners.md
       - Problem: api/problem.md
       - Result: api/result.md
       - GaussianNoiseLikelihood: api/noise.md

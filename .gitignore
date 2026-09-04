@@ -39,6 +39,7 @@ Thumbs.db
 
 # Docs build output (never the source)
 docs/_build/
+site/
 
 notes_chat_bayesian_,model_updating_package.md
 

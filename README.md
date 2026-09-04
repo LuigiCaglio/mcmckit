@@ -1,12 +1,15 @@
 # mcmckit
 
-Lightweight Bayesian model updating for engineering applications (structural dynamics, SHM, inverse problems).
+Minimal, plug-and-play MCMC samplers for Python.
+
+Built for Bayesian model updating and inverse problems in engineering, where
+the expensive part is your forward model and you want the sampler to stay out
+of the way. Depends only on NumPy and SciPy.
 
 ## Install
 
 ```bash
-pip install mcmckit           # core (numpy + scipy)
-pip install mcmckit[plot]     # + matplotlib for plots
+pip install git+https://github.com/LuigiCaglio/mcmckit.git
 ```
 
 For development:
@@ -17,65 +20,122 @@ cd mcmckit
 pip install -e ".[dev,plot]"
 ```
 
-## Quick start
+## Quick start — you own the loop
+
+Every sampler is a plain function that advances the chain by **one step**.
+State goes in as arguments and comes back as return values. Nothing is hidden
+on an object, so the recursion is yours to write, stop, inspect and modify:
 
 ```python
 import numpy as np
 import mcmckit as mc
 
-# 1. Define the problem
-def log_prior(theta):
-    return 0.0  # flat prior
+def log_post(theta):                      # your model goes here
+    return -0.5 * np.sum(theta**2)
 
-def log_likelihood(theta):
-    return -0.5 * np.sum(theta**2)  # standard normal
+d = 2
+x = np.zeros(d)                           # current position
+logp = log_post(x)                        # its log posterior
+S = np.linalg.cholesky(np.eye(d) * 0.1**2)   # RAM adaptation state
 
-problem = mc.Problem(prior=log_prior, likelihood=log_likelihood, param_names=["x", "y"])
+chain = np.zeros((10_000, d))
+for i in range(1, 10_001):
+    x, logp, S, accepted = mc.ram_step(log_post, x, logp, S, i)
 
-# 2. Run a sampler
-mh = mc.MetropolisHastings(proposal_cov=np.eye(2), n_samples=10_000)
-result = mh.run(problem, x0=[0.0, 0.0])
+    chain[i - 1] = x
+    if i % 1000 == 0:                     # your convergence check, your rules
+        print(i, x, logp)
+```
 
-# 3. Inspect results
+That is the whole interface. `ram_step` proposes, accepts or rejects, adapts
+the proposal covariance, and hands everything back. Drop it into a loop you
+already have.
+
+| Function | Threaded state | Returns |
+|---|---|---|
+| `mh_step` | — (fixed `cov`) | `x, logp, accepted` |
+| `ram_step` | `S`, step index `i` | `x, logp, S, accepted` |
+| `dram_step` | `DRAMState` | `x, logp, state, accepted` |
+| `mala_step` | `grad` | `x, logp, grad, accepted` |
+| `adaptive_mala_step` | `grad`, `log_step`, `i` | `x, logp, grad, log_step, accepted` |
+| `gibbs_step` | — (`blocks`, `proposal_std`) | `x, logp, accepted_per_block` |
+
+### Sign convention
+
+Every function takes a **log-posterior**: bigger is a better fit. If your code
+carries a negative log-posterior, wrap it once:
+
+```python
+log_post = lambda theta: -my_nll(theta)
+```
+
+### Keeping your forward model's output
+
+If your callable returns `(log_post, aux)`, the extra payload rides along and
+comes back attached to the accepted sample. Natural frequencies, mode shapes,
+residuals — whatever your model already computed, without re-running it:
+
+```python
+def log_post(theta):
+    freqs = surrogate(theta)
+    return -0.5 * np.sum(((freqs - measured) / sigma)**2), freqs
+
+x, logp, S, accepted, freqs = mc.ram_step(log_post, x, logp, S, i, aux=freqs)
+```
+
+Return a plain float instead and no `aux` comes back, so the signature stays
+its usual width.
+
+## Or hand over the loop
+
+When you do not need control of the recursion, the full-run helpers are thin
+loops over exactly the same step functions:
+
+```python
+result = mc.ram(log_post, x0=[0.0, 0.0], n_samples=10_000)
+
 print(result.mean(), result.std())
 result.discard(1000).plot_corner(title="Posterior")
 ```
 
+`metropolis`, `ram`, `dram`, `mala`, `adaptive_mala` and `gibbs` all follow
+this shape and return a `Result` with statistics and plots attached.
+
 ## Samplers
 
-| Class | Method | Notes |
-|---|---|---|
-| `MetropolisHastings` | Random-walk MH | Fixed proposal covariance |
-| `MALA` | Langevin | Requires `grad_log_likelihood` |
-| `RAM` | Robust Adaptive MH | Self-tunes covariance (Vihola 2012) |
-| `DRAM` | Delayed Rejection + AM | Best general-purpose adaptive sampler |
-| `AdaptiveMALA` | Adaptive Langevin | Log-space step-size tuning |
-| `TMCMC` | Transitional MCMC | Prior→posterior bridge, log-evidence estimate |
-| `Gibbs` | Metropolis-within-Gibbs | Block updates, per-block acceptance rates |
+| Step function | Full run | Method | Notes |
+|---|---|---|---|
+| `mh_step` | `metropolis` | Random-walk MH | Fixed proposal covariance |
+| `mala_step` | `mala` | Langevin | Needs the gradient |
+| `ram_step` | `ram` | Robust Adaptive MH | Self-tunes covariance (Vihola 2012) |
+| `dram_step` | `dram` | Delayed Rejection + AM | Best general-purpose adaptive sampler |
+| `adaptive_mala_step` | `adaptive_mala` | Adaptive Langevin | Log-space step-size tuning |
+| `gibbs_step` | `gibbs` | Metropolis-within-Gibbs | Block updates, per-block rates |
+| — | `TMCMC` | Transitional MCMC | Prior→posterior bridge, log-evidence |
 
-All samplers share the same interface:
+TMCMC works on a population of particles per stage rather than one chain
+position, so it does not have a single-step form. It stays a class.
 
-```python
-sampler.initialize(problem, x0)   # set up state
-sampler.step()                    # single step (stop any time)
-result = sampler.get_result()     # collect samples so far
+### Stateful sampler objects
 
-# or simply:
-result = sampler.run(problem, x0)
-```
-
-## Problem definition
+The original class interface is still there for stop-and-inspect workflows,
+and is unchanged:
 
 ```python
-problem = mc.Problem(
-    prior=log_prior,                   # callable: theta -> float
-    likelihood=log_likelihood,         # callable: theta -> float
-    param_names=["E", "zeta"],         # optional
-    bounds=[(-np.inf, np.inf), ...],   # optional, informational
-    grad_log_likelihood=grad_ll,       # optional, required for MALA
-    grad_log_prior=grad_lp,            # optional, required for MALA
-)
+sampler = mc.RAM(n_samples=10_000, initial_cov=np.eye(2))
+sampler.initialize(problem, x0=[0.0, 0.0])
+sampler.step()
+result = sampler.get_result()
 ```
+
+These take a `Problem`, which bundles a prior and likelihood:
+
+```python
+problem = mc.Problem(prior=log_prior, likelihood=log_likelihood,
+                     param_names=["E", "zeta"])
+```
+
+The full-run helpers accept either a `Problem` or a bare `log_post` callable.
 
 ## TMCMC (Transitional MCMC)
 
@@ -89,8 +149,6 @@ tmcmc = mc.TMCMC(n_particles=1000, n_mcmc_steps=3)
 result = tmcmc.run(problem, prior_samples=prior_samples)
 
 print(f"log-evidence: {result.log_evidence:.3f}")
-
-# Visualise particle evolution stage by stage
 tmcmc.plot_stages(max_stages=6, title="Prior → Posterior")
 ```
 
@@ -131,10 +189,19 @@ result.plot_corner(style="corner", true_values=[2.0, -1.0])
 # styles: "corner" | "scatter" | "full" | "kde"
 ```
 
+Driving the loop yourself gives you a plain array, which you can wrap when you
+want those plots:
+
+```python
+result = mc.Result(samples=chain, param_names=["E", "zeta"])
+result.plot_corner()
+```
+
 ## Examples
 
 | Script | Demonstrates |
 |---|---|
+| `examples/own_loop.py` | **Start here.** Step functions, your own loop, early stopping, aux output |
 | `examples/simple_gaussian.py` | MH, all corner styles, burn-in, raw samples |
 | `examples/mala_vs_mh.py` | MH vs MALA side-by-side |
 | `examples/ram_example.py` | RAM self-tuning from bad initial covariance |

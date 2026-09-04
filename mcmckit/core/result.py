@@ -45,15 +45,17 @@ class Result:
     Parameters
     ----------
     samples : np.ndarray, shape (n_samples, n_params)
-    log_posteriors : np.ndarray, shape (n_samples,)
+    log_posteriors : np.ndarray, shape (n_samples,), optional
+        Omit it to wrap a chain you produced yourself with the step
+        functions; everything except log-posterior-based output still works.
     param_names : list of str, optional
     acceptance_rate : float, optional
     """
 
-    def __init__(self, samples, log_posteriors, param_names=None, acceptance_rate=None,
-                 log_evidence=None):
+    def __init__(self, samples, log_posteriors=None, param_names=None,
+                 acceptance_rate=None, log_evidence=None):
         self.samples = np.asarray(samples)
-        self.log_posteriors = np.asarray(log_posteriors)
+        self.log_posteriors = None if log_posteriors is None else np.asarray(log_posteriors)
         self.param_names = param_names
         self.acceptance_rate = acceptance_rate
         self.log_evidence = log_evidence  # set by TMCMC; None for MCMC samplers
@@ -125,7 +127,7 @@ class Result:
             raise ValueError(f"Cannot discard {n} samples from a chain of length {len(self.samples)}.")
         return Result(
             samples=self.samples[n:],
-            log_posteriors=self.log_posteriors[n:],
+            log_posteriors=None if self.log_posteriors is None else self.log_posteriors[n:],
             param_names=self.param_names,
             acceptance_rate=self.acceptance_rate,
         )
