@@ -1,0 +1,2288 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Lightweight Bayesian model updating with MCMC for engineering applications">
+      
+      
+        <meta name="author" content="Luigi Caglio">
+      
+      
+        <link rel="canonical" href="https://luigicaglio.github.io/mcmckit/theory/">
+      
+      
+        <link rel="prev" href="../plotting/">
+      
+      
+        <link rel="next" href="../parallel/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>Theory - mcmckit</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/_mkdocstrings.css">
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="teal" data-md-color-accent="cyan">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#theory" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow md-header--lifted" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="mcmckit" class="md-header__button md-logo" aria-label="mcmckit" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            mcmckit
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Theory
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="teal" data-md-color-accent="cyan"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m17.75 4.09-2.53 1.94.91 3.06-2.63-1.81-2.63 1.81.91-3.06-2.53-1.94L12.44 4l1.06-3 1.06 3zm3.5 6.91-1.64 1.25.59 1.98-1.7-1.17-1.7 1.17.59-1.98L15.75 11l2.06-.05L18.5 9l.69 1.95zm-2.28 4.95c.83-.08 1.72 1.1 1.19 1.85-.32.45-.66.87-1.08 1.27C15.17 23 8.84 23 4.94 19.07c-3.91-3.9-3.91-10.24 0-14.14.4-.4.82-.76 1.27-1.08.75-.53 1.93.36 1.85 1.19-.27 2.86.69 5.83 2.89 8.02a9.96 9.96 0 0 0 8.02 2.89m-1.64 2.02a12.08 12.08 0 0 1-7.8-3.47c-2.17-2.19-3.33-5-3.49-7.82-2.81 3.14-2.7 7.96.31 10.98 3.02 3.01 7.84 3.12 10.98.31"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="teal" data-md-color-accent="cyan"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 7a5 5 0 0 1 5 5 5 5 0 0 1-5 5 5 5 0 0 1-5-5 5 5 0 0 1 5-5m0 2a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3m0-7 2.39 3.42C13.65 5.15 12.84 5 12 5s-1.65.15-2.39.42zM3.34 7l4.16-.35A7.2 7.2 0 0 0 5.94 8.5c-.44.74-.69 1.5-.83 2.29zm.02 10 1.76-3.77a7.131 7.131 0 0 0 2.38 4.14zM20.65 7l-1.77 3.79a7.02 7.02 0 0 0-2.38-4.15zm-.01 10-4.14.36c.59-.51 1.12-1.14 1.54-1.86.42-.73.69-1.5.83-2.29zM12 22l-2.41-3.44c.74.27 1.55.44 2.41.44.82 0 1.63-.17 2.37-.44z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/LuigiCaglio/mcmckit" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    LuigiCaglio/mcmckit
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+    
+      
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href=".." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../quickstart/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Quickstart
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../samplers/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Choosing a sampler
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../plotting/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Plots
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    <li class="md-tabs__item md-tabs__item--active">
+      <a href="./" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Theory
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../parallel/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Parallel evaluation
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../examples/own_loop/" class="md-tabs__link">
+          
+  
+  
+  Examples
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../api/steps/" class="md-tabs__link">
+          
+  
+  
+  API Reference
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+    
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+  
+
+<nav class="md-nav md-nav--primary md-nav--lifted md-nav--integrated" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="mcmckit" class="md-nav__button md-logo" aria-label="mcmckit" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    mcmckit
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/LuigiCaglio/mcmckit" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    LuigiCaglio/mcmckit
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../quickstart/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Quickstart
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../samplers/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Choosing a sampler
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../plotting/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Plots
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Theory
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Theory
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#bayesian-model-updating" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Bayesian model updating
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#metropolis-hastings" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Metropolis-Hastings
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#mala-metropolis-adjusted-langevin-algorithm" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        MALA — Metropolis-adjusted Langevin Algorithm
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#adaptive-algorithms" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Adaptive algorithms
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Adaptive algorithms">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#ram-robust-adaptive-metropolis" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        RAM — Robust Adaptive Metropolis
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#dram-delayed-rejection-adaptive-metropolis" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        DRAM — Delayed Rejection Adaptive Metropolis
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#adaptivemala" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        AdaptiveMALA
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#tmcmc-transitional-markov-chain-monte-carlo" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        TMCMC — Transitional Markov Chain Monte Carlo
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#gibbs-sampling" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Gibbs sampling
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#gaussian-noise-model" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Gaussian noise model
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Gaussian noise model">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#estimated-sigma" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Estimated \(\sigma\)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#marginalised-sigma" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Marginalised \(\sigma\)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#per-channel-noise" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Per-channel noise
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#convergence-diagnostics" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Convergence diagnostics
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Convergence diagnostics">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#effective-sample-size" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Effective sample size
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#autocorrelation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Autocorrelation
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#gelman-rubin-hatr" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Gelman-Rubin \(\hat{R}\)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#model-class-selection" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Model class selection
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Model class selection">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#the-evidence-as-a-model-score" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The evidence as a model score
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#bayes-factor" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Bayes factor
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#jeffreys-scale" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Jeffreys scale
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#evidence-from-tmcmc" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Evidence from TMCMC
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#workflow" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Workflow
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#bayesian-model-averaging" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Bayesian Model Averaging
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Bayesian Model Averaging">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#model-posterior-probabilities" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Model posterior probabilities
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#bma-posterior-predictive" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        BMA posterior predictive
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#behaviour" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Behaviour
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#workflow_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Workflow
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../parallel/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Parallel evaluation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Examples
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Examples
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../examples/own_loop/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Your own loop
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../examples/basic/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Basic MH & MALA
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../examples/adaptive/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Adaptive samplers
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../examples/tmcmc/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    TMCMC
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../examples/gibbs/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Gibbs sampling
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../examples/noise/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Noise estimation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../examples/structural/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Structural identification
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../examples/model_comparison/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Model class selection
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../examples/model_averaging/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Model averaging (BMA)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../examples/diagnostics/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Diagnostics & multi-chain
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../examples/sequential/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Sequential updating
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_8" >
+        
+          
+          <label class="md-nav__link" for="__nav_8" id="__nav_8_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API Reference
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_8_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_8">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    API Reference
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/steps/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Step functions
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/runners/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Full-run helpers
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/problem/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Problem
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/result/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Result
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/noise/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    GaussianNoiseLikelihood
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/similarity/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Shape similarity
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/hierarchical/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    HierarchicalProblem
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/model_comparison/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Model comparison
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/diagnostics/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Diagnostics
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/multichain/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Multi-chain
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/parallel/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Parallel
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/sequential/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    PosteriorPrior
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_8_13" >
+        
+          
+          <label class="md-nav__link" for="__nav_8_13" id="__nav_8_13_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Samplers
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_8_13_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_8_13">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Samplers
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/samplers/mh/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    MetropolisHastings
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/samplers/mala/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    MALA
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/samplers/ram/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RAM
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/samplers/dram/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    DRAM
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/samplers/adaptive_mala/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    AdaptiveMALA
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/samplers/tmcmc/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    TMCMC
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/samplers/gibbs/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Gibbs
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="theory">Theory<a class="headerlink" href="#theory" title="Permanent link">&para;</a></h1>
+<h2 id="bayesian-model-updating">Bayesian model updating<a class="headerlink" href="#bayesian-model-updating" title="Permanent link">&para;</a></h2>
+<p>Given a model with parameters <span class="arithmatex">\(\theta\)</span> and observed data <span class="arithmatex">\(y\)</span>, Bayes' theorem gives the posterior:</p>
+<div class="arithmatex">\[p(\theta \mid y) = \frac{p(y \mid \theta)\, p(\theta)}{p(y)}\]</div>
+<p>where:</p>
+<ul>
+<li><span class="arithmatex">\(p(\theta)\)</span> is the <strong>prior</strong> — knowledge about <span class="arithmatex">\(\theta\)</span> before seeing data.</li>
+<li><span class="arithmatex">\(p(y \mid \theta)\)</span> is the <strong>likelihood</strong> — how probable the data is given <span class="arithmatex">\(\theta\)</span>.</li>
+<li><span class="arithmatex">\(p(y) = \int p(y \mid \theta)\, p(\theta)\, d\theta\)</span> is the <strong>evidence</strong> (marginal likelihood).</li>
+</ul>
+<p>All samplers in mcmckit work with the <strong>log-posterior</strong>:</p>
+<div class="arithmatex">\[\log p(\theta \mid y) = \log p(y \mid \theta) + \log p(\theta) + \text{const}\]</div>
+<hr />
+<h2 id="metropolis-hastings">Metropolis-Hastings<a class="headerlink" href="#metropolis-hastings" title="Permanent link">&para;</a></h2>
+<p>At each step, a proposal <span class="arithmatex">\(\theta^* \sim q(\cdot \mid \theta_t)\)</span> is accepted with probability:</p>
+<div class="arithmatex">\[\alpha = \min\!\left(1,\ \frac{p(\theta^* \mid y)\, q(\theta_t \mid \theta^*)}{p(\theta_t \mid y)\, q(\theta^* \mid \theta_t)}\right)\]</div>
+<p>For a symmetric Gaussian proposal <span class="arithmatex">\(q(\theta^* \mid \theta_t) = \mathcal{N}(\theta_t, \Sigma)\)</span> this simplifies to:</p>
+<div class="arithmatex">\[\alpha = \min\!\left(1,\ \exp\!\bigl[\log p(\theta^*\mid y) - \log p(\theta_t\mid y)\bigr]\right)\]</div>
+<p><strong>Optimal acceptance rate</strong> for a <span class="arithmatex">\(d\)</span>-dimensional Gaussian target is approximately 23.4%.</p>
+<hr />
+<h2 id="mala-metropolis-adjusted-langevin-algorithm">MALA — Metropolis-adjusted Langevin Algorithm<a class="headerlink" href="#mala-metropolis-adjusted-langevin-algorithm" title="Permanent link">&para;</a></h2>
+<p>MALA adds a gradient drift to the proposal:</p>
+<div class="arithmatex">\[\theta^* = \theta_t + \tfrac{\varepsilon^2}{2}\, \nabla\!\log p(\theta_t \mid y) + \varepsilon\, \xi, \quad \xi \sim \mathcal{N}(0, I)\]</div>
+<p>The gradient bias makes proposals more likely to move towards high-density regions. Because the proposal is asymmetric, the MH correction uses the full ratio:</p>
+<div class="arithmatex">\[\alpha = \min\!\left(1,\ \frac{p(\theta^* \mid y)\, q(\theta_t \mid \theta^*)}{p(\theta_t \mid y)\, q(\theta^* \mid \theta_t)}\right)\]</div>
+<p><strong>Optimal acceptance rate</strong> for MALA is approximately 57.4%.</p>
+<hr />
+<h2 id="adaptive-algorithms">Adaptive algorithms<a class="headerlink" href="#adaptive-algorithms" title="Permanent link">&para;</a></h2>
+<h3 id="ram-robust-adaptive-metropolis">RAM — Robust Adaptive Metropolis<a class="headerlink" href="#ram-robust-adaptive-metropolis" title="Permanent link">&para;</a></h3>
+<p>RAM (Vihola 2012) adapts the Cholesky factor <span class="arithmatex">\(S_t\)</span> of the proposal covariance via a rank-1 update targeting a desired acceptance rate <span class="arithmatex">\(\alpha^*\)</span>:</p>
+<div class="arithmatex">\[S_{t+1} S_{t+1}^T = S_t \!\left(I + \eta_t (\alpha_t - \alpha^*)\, \frac{r_t r_t^T}{\|r_t\|^2}\right) S_t^T\]</div>
+<p>where <span class="arithmatex">\(r_t = \theta^* - \theta_t\)</span> and <span class="arithmatex">\(\eta_t = t^{-\gamma}\)</span> (default <span class="arithmatex">\(\gamma = 0.51\)</span>). The target rate is <span class="arithmatex">\(\alpha^* = 0.234\)</span>.</p>
+<h3 id="dram-delayed-rejection-adaptive-metropolis">DRAM — Delayed Rejection Adaptive Metropolis<a class="headerlink" href="#dram-delayed-rejection-adaptive-metropolis" title="Permanent link">&para;</a></h3>
+<p>DRAM (Haario et al. 2006) combines two ideas:</p>
+<p><strong>Adaptive Metropolis (AM):</strong> Update the proposal covariance using the empirical covariance of the chain so far:</p>
+<div class="arithmatex">\[\Sigma_t = s_d \cdot \text{Cov}(\theta_1, \ldots, \theta_t) + s_d \varepsilon I\]</div>
+<p><strong>Delayed Rejection (DR):</strong> If the first proposal <span class="arithmatex">\(\theta^*_1\)</span> is rejected, a second proposal <span class="arithmatex">\(\theta^*_2\)</span> is drawn from a smaller proposal and accepted with a corrected probability (Tierney-Mira correction) that maintains detailed balance.</p>
+<h3 id="adaptivemala">AdaptiveMALA<a class="headerlink" href="#adaptivemala" title="Permanent link">&para;</a></h3>
+<p>Adapts the MALA step size <span class="arithmatex">\(\varepsilon\)</span> in log-space:</p>
+<div class="arithmatex">\[\log \varepsilon_{t+1} = \log \varepsilon_t + \eta_t\, (\alpha_t - 0.574)\]</div>
+<p>where <span class="arithmatex">\(\eta_t = t^{-\gamma}\)</span> (default <span class="arithmatex">\(\gamma = 0.6\)</span>).</p>
+<hr />
+<h2 id="tmcmc-transitional-markov-chain-monte-carlo">TMCMC — Transitional Markov Chain Monte Carlo<a class="headerlink" href="#tmcmc-transitional-markov-chain-monte-carlo" title="Permanent link">&para;</a></h2>
+<p>TMCMC (Ching &amp; Chen 2007) bridges the prior to the posterior through a sequence of tempered intermediate distributions:</p>
+<div class="arithmatex">\[p_j(\theta) \propto p(y \mid \theta)^{\beta_j}\, p(\theta), \quad 0 = \beta_0 &lt; \beta_1 &lt; \cdots &lt; \beta_J = 1\]</div>
+<p>At each stage <span class="arithmatex">\(j\)</span>:</p>
+<ol>
+<li><strong>Importance weights:</strong> <span class="arithmatex">\(w_j(\theta) \propto p(y\mid\theta)^{\Delta\beta_j}\)</span>, <span class="arithmatex">\(\Delta\beta_j = \beta_j - \beta_{j-1}\)</span></li>
+<li><strong>Log-evidence contribution:</strong></li>
+</ol>
+<div class="arithmatex">\[\log p(y) \mathrel{+}= \log \mathbb{E}\!\left[p(y\mid\theta)^{\Delta\beta_j}\right]\]</div>
+<p>computed in a numerically stable way as <span class="arithmatex">\(\log(\text{mean}(\exp(\Delta\beta_j \cdot \ell_i - \Delta\beta_j \cdot \max \ell)))+ \Delta\beta_j \cdot \max \ell\)</span>.</p>
+<ol>
+<li><strong>Systematic resampling</strong> of particles according to <span class="arithmatex">\(w_j\)</span>.</li>
+<li><strong>MH rejuvenation</strong> using the weighted covariance as proposal.</li>
+</ol>
+<p><strong>Adaptive <span class="arithmatex">\(\beta\)</span> schedule:</strong> at each stage, <span class="arithmatex">\(\Delta\beta\)</span> is chosen by bisection so that the effective sample size ratio <span class="arithmatex">\(\text{ESS}/N \approx \tau\)</span> (default <span class="arithmatex">\(\tau = 0.5\)</span>).</p>
+<hr />
+<h2 id="gibbs-sampling">Gibbs sampling<a class="headerlink" href="#gibbs-sampling" title="Permanent link">&para;</a></h2>
+<p>Metropolis-within-Gibbs updates one block of parameters at a time, holding the rest fixed. For block <span class="arithmatex">\(k\)</span>:</p>
+<div class="arithmatex">\[\theta^{(k)*} = \theta^{(k)}_t + \sigma_k\, \xi, \quad \xi \sim \mathcal{N}(0, I_{|k|})\]</div>
+<p>accepted with probability <span class="arithmatex">\(\min(1, \exp[\log p(\theta^* \mid y) - \log p(\theta_t \mid y)])\)</span>.</p>
+<p>This preserves the correct joint distribution even though only one block moves per step.</p>
+<hr />
+<h2 id="gaussian-noise-model">Gaussian noise model<a class="headerlink" href="#gaussian-noise-model" title="Permanent link">&para;</a></h2>
+<p>For a forward model <span class="arithmatex">\(f(\theta)\)</span> and observed data <span class="arithmatex">\(y\)</span>, the Gaussian likelihood is:</p>
+<div class="arithmatex">\[\log p(y \mid \theta, \sigma) = -\frac{1}{2\sigma^2}\|y - f(\theta)\|^2 - n\log\sigma\]</div>
+<h3 id="estimated-sigma">Estimated <span class="arithmatex">\(\sigma\)</span><a class="headerlink" href="#estimated-sigma" title="Permanent link">&para;</a></h3>
+<p>The last element of <span class="arithmatex">\(\theta\)</span> is <span class="arithmatex">\(\log\sigma\)</span> (log-transform ensures positivity) and is sampled jointly.</p>
+<h3 id="marginalised-sigma">Marginalised <span class="arithmatex">\(\sigma\)</span><a class="headerlink" href="#marginalised-sigma" title="Permanent link">&para;</a></h3>
+<p>With an Inverse-Gamma<span class="arithmatex">\((\alpha, \beta)\)</span> prior on <span class="arithmatex">\(\sigma^2\)</span>, integration over <span class="arithmatex">\(\sigma^2\)</span> is analytic for any <span class="arithmatex">\(f(\theta)\)</span>:</p>
+<div class="arithmatex">\[\log p(y \mid \theta) = -\!\left(\alpha + \tfrac{n}{2}\right)\log\!\left(\beta + \tfrac{1}{2}\|y - f(\theta)\|^2\right) + \text{const}\]</div>
+<p>The posterior mean of <span class="arithmatex">\(\sigma\)</span> is <span class="arithmatex">\(\sqrt{(\beta + \text{RSS}/2)\,/\,(\alpha + n/2 - 1)}\)</span>.</p>
+<h3 id="per-channel-noise">Per-channel noise<a class="headerlink" href="#per-channel-noise" title="Permanent link">&para;</a></h3>
+<p>When different measurement types have different noise levels (e.g. frequency 1 vs frequency 2), observations are partitioned into channels. Each channel <span class="arithmatex">\(i\)</span> has its own <span class="arithmatex">\(\sigma_i\)</span> and the total log-likelihood is:</p>
+<div class="arithmatex">\[\log p(y \mid \theta) = \sum_i \log p(y_i \mid \theta, \sigma_i)\]</div>
+<p>In the marginalised case, each channel has an independent InvGamma prior and is integrated separately.</p>
+<hr />
+<h2 id="convergence-diagnostics">Convergence diagnostics<a class="headerlink" href="#convergence-diagnostics" title="Permanent link">&para;</a></h2>
+<h3 id="effective-sample-size">Effective sample size<a class="headerlink" href="#effective-sample-size" title="Permanent link">&para;</a></h3>
+<p>MCMC samples are correlated, so <span class="arithmatex">\(N\)</span> samples are worth fewer than <span class="arithmatex">\(N\)</span>
+independent draws.  The <strong>effective sample size</strong> (ESS) quantifies this:</p>
+<div class="arithmatex">\[\text{ESS} = \frac{N}{1 + 2\sum_{k=1}^{\infty} \rho_k}\]</div>
+<p>where <span class="arithmatex">\(\rho_k\)</span> is the autocorrelation at lag <span class="arithmatex">\(k\)</span>.  The sum is truncated using
+Geyer's (1992) initial positive sequence criterion to avoid noise blow-up at
+large lags.</p>
+<h3 id="autocorrelation">Autocorrelation<a class="headerlink" href="#autocorrelation" title="Permanent link">&para;</a></h3>
+<p>The normalised autocorrelation at lag <span class="arithmatex">\(k\)</span> for a scalar chain <span class="arithmatex">\(\{\theta_t\}\)</span> is:</p>
+<div class="arithmatex">\[\rho_k = \frac{\sum_{t=1}^{N-k}(\theta_t - \bar\theta)(\theta_{t+k} - \bar\theta)}{\sum_{t=1}^{N}(\theta_t - \bar\theta)^2}\]</div>
+<p>Computed via FFT for efficiency.  Slow decay (high autocorrelation at large lags)
+indicates poor mixing — increase the proposal covariance or run longer.</p>
+<h3 id="gelman-rubin-hatr">Gelman-Rubin <span class="arithmatex">\(\hat{R}\)</span><a class="headerlink" href="#gelman-rubin-hatr" title="Permanent link">&para;</a></h3>
+<p>Given <span class="arithmatex">\(M\)</span> independent chains of length <span class="arithmatex">\(N\)</span>, split each chain in half to obtain
+<span class="arithmatex">\(2M\)</span> sub-chains.  Define the between-chain variance <span class="arithmatex">\(B\)</span> and within-chain
+variance <span class="arithmatex">\(W\)</span>:</p>
+<div class="arithmatex">\[B = \frac{N}{2M-1}\sum_{m=1}^{2M}(\bar\theta_m - \bar\theta)^2, \qquad
+  W = \frac{1}{2M}\sum_{m=1}^{2M} s_m^2\]</div>
+<p>The pooled variance estimate is:</p>
+<div class="arithmatex">\[\widehat{\text{var}} = \frac{N-1}{N} W + \frac{B}{N}\]</div>
+<p>and the statistic is:</p>
+<div class="arithmatex">\[\hat{R} = \sqrt{\frac{\widehat{\text{var}}}{W}}\]</div>
+<p><span class="arithmatex">\(\hat{R} \approx 1\)</span> means all chains sample the same distribution.
+A common threshold is <span class="arithmatex">\(\hat{R} &lt; 1.01\)</span>.  The split-chain variant (Vehtari
+et al., 2021) also detects non-stationarity within a single chain.</p>
+<hr />
+<h2 id="model-class-selection">Model class selection<a class="headerlink" href="#model-class-selection" title="Permanent link">&para;</a></h2>
+<h3 id="the-evidence-as-a-model-score">The evidence as a model score<a class="headerlink" href="#the-evidence-as-a-model-score" title="Permanent link">&para;</a></h3>
+<p>The <strong>evidence</strong> (marginal likelihood) of a model <span class="arithmatex">\(M\)</span> is:</p>
+<div class="arithmatex">\[p(y \mid M) = \int p(y \mid \theta, M)\, p(\theta \mid M)\, d\theta\]</div>
+<p>It is the probability of the data averaged over the prior.  A model that fits the data well <em>and</em> does so with a compact prior gets a high evidence — this is the mathematical expression of <strong>Occam's razor</strong>: unnecessary parameters are penalized because they spread prior probability over regions that do not contribute to the fit.</p>
+<h3 id="bayes-factor">Bayes factor<a class="headerlink" href="#bayes-factor" title="Permanent link">&para;</a></h3>
+<p>Given two competing models <span class="arithmatex">\(M_1\)</span> and <span class="arithmatex">\(M_2\)</span>, the <strong>Bayes factor</strong> is:</p>
+<div class="arithmatex">\[B_{12} = \frac{p(y \mid M_1)}{p(y \mid M_2)}\]</div>
+<p>It is the factor by which the data update the prior odds in favour of <span class="arithmatex">\(M_1\)</span>.  In log form:</p>
+<div class="arithmatex">\[\ln B_{12} = \ln p(y \mid M_1) - \ln p(y \mid M_2)\]</div>
+<h3 id="jeffreys-scale">Jeffreys scale<a class="headerlink" href="#jeffreys-scale" title="Permanent link">&para;</a></h3>
+<p>Interpretation of <span class="arithmatex">\(\log_{10} B_{12}\)</span> (evidence <em>in favour of</em> <span class="arithmatex">\(M_1\)</span>):</p>
+<table>
+<thead>
+<tr>
+<th><span class="arithmatex">\(\log_{10} B_{12}\)</span></th>
+<th>Interpretation</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><span class="arithmatex">\(&gt; 2\)</span></td>
+<td>Decisive</td>
+</tr>
+<tr>
+<td><span class="arithmatex">\(1\)</span> – <span class="arithmatex">\(2\)</span></td>
+<td>Strong</td>
+</tr>
+<tr>
+<td><span class="arithmatex">\(0.5\)</span> – <span class="arithmatex">\(1\)</span></td>
+<td>Substantial</td>
+</tr>
+<tr>
+<td><span class="arithmatex">\(&lt; 0.5\)</span></td>
+<td>Barely worth mentioning</td>
+</tr>
+</tbody>
+</table>
+<p>Negative values indicate evidence in favour of <span class="arithmatex">\(M_2\)</span>.</p>
+<h3 id="evidence-from-tmcmc">Evidence from TMCMC<a class="headerlink" href="#evidence-from-tmcmc" title="Permanent link">&para;</a></h3>
+<p>TMCMC accumulates the log-evidence as a byproduct of the tempering stages.  At each stage the incremental contribution is:</p>
+<div class="arithmatex">\[\ln p(y \mid M) \mathrel{+}= \ln \mathbb{E}_{\theta \sim p_j}\!\left[p(y \mid \theta)^{\Delta\beta}\right]\]</div>
+<p>which is estimated from the particles without any additional computation.  No other sampler in mcmckit computes the evidence — use TMCMC for model comparison.</p>
+<h3 id="workflow">Workflow<a class="headerlink" href="#workflow" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">mcmckit</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">mc</span>
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="n">comp</span> <span class="o">=</span> <span class="n">mc</span><span class="o">.</span><span class="n">ModelComparison</span><span class="p">(</span>
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>    <span class="n">models</span><span class="o">=</span><span class="p">[</span>
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>        <span class="p">(</span><span class="s2">"M1"</span><span class="p">,</span> <span class="n">problem_1</span><span class="p">,</span> <span class="n">prior_samples_1</span><span class="p">),</span>
+<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>        <span class="p">(</span><span class="s2">"M2"</span><span class="p">,</span> <span class="n">problem_2</span><span class="p">,</span> <span class="n">prior_samples_2</span><span class="p">),</span>
+<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>    <span class="p">],</span>
+<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>    <span class="n">tmcmc_kwargs</span><span class="o">=</span><span class="p">{</span><span class="s2">"n_particles"</span><span class="p">:</span> <span class="mi">1000</span><span class="p">},</span>
+<a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a><span class="p">)</span>
+<a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a><span class="n">comp</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
+<a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a><span class="n">comp</span><span class="o">.</span><span class="n">summary</span><span class="p">()</span>
+</code></pre></div>
+<p>For a standalone pairwise comparison:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="n">bf</span> <span class="o">=</span> <span class="n">mc</span><span class="o">.</span><span class="n">bayes_factor</span><span class="p">(</span><span class="n">result_1</span><span class="o">.</span><span class="n">log_evidence</span><span class="p">,</span> <span class="n">result_2</span><span class="o">.</span><span class="n">log_evidence</span><span class="p">)</span>
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="c1"># {'log_bf': ..., 'log10_bf': ..., 'bf': ..., 'preferred': 'M1', 'evidence': 'Decisive'}</span>
+</code></pre></div>
+<hr />
+<h2 id="bayesian-model-averaging">Bayesian Model Averaging<a class="headerlink" href="#bayesian-model-averaging" title="Permanent link">&para;</a></h2>
+<p>When no model is decisively preferred — or when you want predictions that
+are robust to model uncertainty — <strong>Bayesian Model Averaging (BMA)</strong>
+combines all models weighted by their posterior probability.</p>
+<h3 id="model-posterior-probabilities">Model posterior probabilities<a class="headerlink" href="#model-posterior-probabilities" title="Permanent link">&para;</a></h3>
+<p>Assuming equal prior model probabilities <span class="arithmatex">\(p(M_k) = 1/K\)</span>:</p>
+<div class="arithmatex">\[w_k = p(M_k \mid y) = \frac{p(y \mid M_k)}{\sum_j p(y \mid M_j)}\]</div>
+<p>With informative prior model probabilities:</p>
+<div class="arithmatex">\[w_k \propto p(y \mid M_k)\, p(M_k)\]</div>
+<h3 id="bma-posterior-predictive">BMA posterior predictive<a class="headerlink" href="#bma-posterior-predictive" title="Permanent link">&para;</a></h3>
+<p>For any quantity of interest <span class="arithmatex">\(Q = f(\theta)\)</span>:</p>
+<div class="arithmatex">\[p(Q \mid y) = \sum_{k=1}^{K} w_k\, p(Q \mid y, M_k)\]</div>
+<p>The BMA predictive is a <strong>mixture</strong> of each model's posterior predictive,
+weighted by <span class="arithmatex">\(w_k\)</span>.  In practice, this is approximated by drawing
+<span class="arithmatex">\(\lfloor w_k \cdot N \rfloor\)</span> posterior samples from model <span class="arithmatex">\(k\)</span> and
+evaluating <span class="arithmatex">\(f(\theta)\)</span> at those samples.</p>
+<h3 id="behaviour">Behaviour<a class="headerlink" href="#behaviour" title="Permanent link">&para;</a></h3>
+<ul>
+<li>When evidence is decisive (<span class="arithmatex">\(w_{\text{best}} \approx 1\)</span>), BMA collapses
+  to the best model's prediction.</li>
+<li>When two models are comparably supported (<span class="arithmatex">\(w_1 \approx w_2 \approx 0.5\)</span>),
+  BMA genuinely averages the two predictive distributions — potentially
+  widening the credible band to reflect model uncertainty.</li>
+<li>BMA predictions are always more conservative (wider bands) than
+  conditioning on a single model.</li>
+</ul>
+<h3 id="workflow_1">Workflow<a class="headerlink" href="#workflow_1" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="n">bma</span> <span class="o">=</span> <span class="n">comp</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span>
+<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>    <span class="n">forward_models</span><span class="o">=</span><span class="p">{</span>
+<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>        <span class="s2">"M1"</span><span class="p">:</span> <span class="k">lambda</span> <span class="n">theta</span><span class="p">:</span> <span class="n">fwd_m1</span><span class="p">(</span><span class="n">theta</span><span class="p">),</span>
+<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a>        <span class="s2">"M2"</span><span class="p">:</span> <span class="k">lambda</span> <span class="n">theta</span><span class="p">:</span> <span class="n">fwd_m2</span><span class="p">(</span><span class="n">theta</span><span class="p">),</span>
+<a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a>    <span class="p">},</span>
+<a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a>    <span class="n">n_eval</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span>
+<a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a><span class="p">)</span>
+<a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a><span class="nb">print</span><span class="p">(</span><span class="n">bma</span><span class="p">)</span>          <span class="c1"># weights for each model</span>
+<a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a><span class="n">bma</span><span class="o">.</span><span class="n">plot_bands</span><span class="p">()</span>    <span class="c1"># credible band of the averaged predictive</span>
+<a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a><span class="n">bma</span><span class="o">.</span><span class="n">decompose</span><span class="p">()</span>     <span class="c1"># per-model mean, std, weight</span>
+</code></pre></div>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.tabs", "navigation.tabs.sticky", "navigation.sections", "navigation.expand", "navigation.top", "toc.integrate", "content.code.copy", "content.code.annotate"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+        <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+      
+    
+  </body>
+</html>
