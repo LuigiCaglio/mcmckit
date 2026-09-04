@@ -95,6 +95,10 @@ this shape and return a [`Result`](api/result.md) with statistics and plots.
 TMCMC advances a whole population of particles per stage rather than a single
 chain position, so it has no single-step form and stays a class.
 
+**Not sure which to use?** [Choosing a sampler](samplers.md) compares them all
+on the same problem, with traces, effective sample sizes and a hard target that
+separates them. [Plots](plotting.md) shows everything the package can draw.
+
 ---
 
 ## Installation

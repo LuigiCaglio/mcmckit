@@ -33,8 +33,10 @@ theme:
 
 nav:
   - Home: index.md
-  - Theory: theory.md
   - Quickstart: quickstart.md
+  - Choosing a sampler: samplers.md
+  - Plots: plotting.md
+  - Theory: theory.md
   - Parallel evaluation: parallel.md
   - Examples:
       - Your own loop: examples/own_loop.md
@@ -105,7 +107,9 @@ markdown_extensions:
       permalink: true
 
 extra_javascript:
-  - https://polyfill.io/v3/polyfill.min.js?features=es6
+  # No polyfill.io here: the domain was sold in 2024 and began serving
+  # malicious code. MathJax 3 needs no polyfill on any currently supported
+  # browser.
   - https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js
 
 extra_css: []

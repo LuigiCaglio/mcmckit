@@ -136,6 +136,12 @@ this shape and return a `Result` with statistics and plots attached.
 TMCMC works on a population of particles per stage rather than one chain
 position, so it does not have a single-step form. It stays a class.
 
+Not sure which to use? **[Choosing a sampler](https://luigicaglio.github.io/mcmckit/samplers/)**
+compares them all on the same problem, with traces, effective sample sizes and a
+hard target that separates them.
+**[Plots](https://luigicaglio.github.io/mcmckit/plotting/)** shows everything the
+package draws.
+
 ### Stateful sampler objects
 
 The original class interface is still there for stop-and-inspect workflows,
