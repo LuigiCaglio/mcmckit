@@ -13,7 +13,7 @@ type: software
 authors:
   - family-names: Caglio
     given-names: Luigi
-    # orcid: "https://orcid.org/0000-0000-0000-0000"   # TODO: add your ORCID
+    orcid: "https://orcid.org/0000-0002-9830-2490"
 version: 0.2.0
 date-released: "2026-09-03"
 license: MIT
