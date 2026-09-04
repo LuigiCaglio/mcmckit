@@ -1,0 +1,25 @@
+{
+  "title": "mcmckit: minimal, plug-and-play MCMC samplers for Python",
+  "description": "<p>mcmckit is a compact, dependency-light set of MCMC samplers for Bayesian model updating and inverse problems in engineering, with an emphasis on structural dynamics and structural health monitoring.</p><p>It includes random-walk Metropolis-Hastings, MALA and adaptive MALA, RAM, DRAM, Metropolis-within-Gibbs, and Transitional MCMC (TMCMC) with log-evidence estimation. All samplers share the same initialize/step/run/get_result interface. Utilities cover noise estimation, hierarchical models, sequential updating, model comparison and convergence diagnostics, plus opt-in parallel evaluation.</p><p>Depends only on NumPy and SciPy, with Matplotlib optional for plotting.</p>",
+  "upload_type": "software",
+  "license": "MIT",
+  "access_right": "open",
+  "creators": [
+    {
+      "name": "Caglio, Luigi",
+      "orcid": "0000-0002-9830-2490"
+    }
+  ],
+  "keywords": [
+    "Bayesian inference",
+    "MCMC",
+    "model updating",
+    "structural dynamics",
+    "structural health monitoring",
+    "inverse problems",
+    "TMCMC",
+    "Python",
+    "NumPy",
+    "SciPy"
+  ]
+}

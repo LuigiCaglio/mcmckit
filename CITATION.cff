@@ -7,8 +7,8 @@ abstract: >-
   structural dynamics and structural health monitoring. It includes random-walk
   Metropolis-Hastings, MALA and adaptive MALA, RAM, DRAM, Metropolis-within-Gibbs
   and Transitional MCMC (TMCMC) with log-evidence estimation, together with
-  utilities for modal likelihoods, noise estimation, hierarchical models,
-  sequential updating, model comparison and convergence diagnostics.
+  utilities for noise estimation, hierarchical models, sequential updating,
+  model comparison and convergence diagnostics.
 type: software
 authors:
   - family-names: Caglio
