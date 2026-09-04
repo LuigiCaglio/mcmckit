@@ -50,6 +50,20 @@ All notable changes to mcmckit are documented here.
 - The install instructions now give the git URL. `pip install mcmckit` was
   documented but the package is not on PyPI.
 
+### Packaging
+- Distribution metadata for a PyPI release: `authors` and `maintainers` (the
+  built wheel previously credited nobody, while `CITATION.cff` and
+  `.zenodo.json` both named the author with an ORCID), `project.urls` pointing
+  at the docs, repository, changelog and issues, keywords, and classifiers for
+  Python 3.13 and the operating-system-independent pure-Python wheel. The
+  summary now matches the project tagline.
+- `[tool.setuptools.packages.find]` restricts the distribution to `mcmckit*`.
+  `tests/` is an importable package, so flat-layout autodiscovery could
+  otherwise have shipped it as a top-level `tests` module.
+- `.github/workflows/publish.yml` builds, validates and smoke-tests the wheel,
+  then publishes on a GitHub Release using PyPI Trusted Publishing, so no API
+  token is stored in the repository or in GitHub secrets.
+
 ### Fixed
 - **DRAM recomputed the empirical covariance over the entire chain history at
   every adaptation**, an O(n) cost per step and O(n^2) over a run. `dram_step`

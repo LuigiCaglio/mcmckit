@@ -1,0 +1,79 @@
+name: Publish to PyPI
+
+# Publishes on a GitHub Release. Cutting a release also triggers the Zenodo
+# archive (once the repository is enabled at zenodo.org/account/settings/github),
+# so one tag produces the PyPI version and the DOI together.
+#
+# Authentication uses PyPI Trusted Publishing (OIDC): no API token is stored
+# in this repository or in GitHub secrets. It must be configured once, at
+# https://pypi.org/manage/account/publishing/ , with:
+#     PyPI project name : mcmckit
+#     Owner             : LuigiCaglio
+#     Repository name   : mcmckit
+#     Workflow name     : publish.yml
+#     Environment name  : pypi
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build distributions
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Build sdist and wheel
+        run: |
+          python -m pip install --upgrade pip build
+          python -m build
+
+      - name: Check the metadata
+        run: |
+          python -m pip install --upgrade twine
+          python -m twine check dist/*
+
+      - name: Install the wheel and smoke test it
+        run: |
+          python -m pip install dist/*.whl
+          python -c "
+          import numpy as np
+          from mcmckit import ram_step, ram, __version__
+          print('version', __version__)
+          f = lambda t: -0.5 * np.sum(t**2)
+          x, lp, S = np.zeros(2), f(np.zeros(2)), np.linalg.cholesky(np.eye(2) * 0.5)
+          for i in range(1, 501):
+              x, lp, S, acc = ram_step(f, x, lp, S, i)
+          ram(f, x0=[0.0, 0.0], n_samples=500)
+          print('ok')
+          "
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist/
+
+  publish:
+    name: Publish to PyPI
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: pypi
+      url: https://pypi.org/p/mcmckit
+    permissions:
+      id-token: write        # required for trusted publishing
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist/
+
+      - name: Publish
+        uses: pypa/gh-action-pypi-publish@release/v1

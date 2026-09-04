@@ -5,10 +5,27 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "mcmckit"
 version = "0.3.0"
-description = "Lightweight Bayesian model updating with MCMC"
+description = "Minimal, plug-and-play MCMC samplers for Python"
 readme = "README.md"
 license = { file = "LICENSE" }
 requires-python = ">=3.9"
+authors = [
+    { name = "Luigi Caglio" },
+]
+maintainers = [
+    { name = "Luigi Caglio" },
+]
+keywords = [
+    "MCMC",
+    "Bayesian inference",
+    "model updating",
+    "inverse problems",
+    "structural dynamics",
+    "structural health monitoring",
+    "TMCMC",
+    "Metropolis-Hastings",
+    "MALA",
+]
 dependencies = [
     "numpy",
     "scipy",
@@ -17,13 +34,24 @@ classifiers = [
     "Development Status :: 3 - Alpha",
     "Intended Audience :: Science/Research",
     "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
     "Topic :: Scientific/Engineering",
+    "Topic :: Scientific/Engineering :: Mathematics",
+    "Topic :: Scientific/Engineering :: Physics",
 ]
+
+[project.urls]
+Homepage = "https://github.com/LuigiCaglio/mcmckit"
+Documentation = "https://luigicaglio.github.io/mcmckit/"
+Repository = "https://github.com/LuigiCaglio/mcmckit"
+Changelog = "https://github.com/LuigiCaglio/mcmckit/blob/master/CHANGELOG.md"
+Issues = "https://github.com/LuigiCaglio/mcmckit/issues"
 
 [project.optional-dependencies]
 plot = ["matplotlib"]
@@ -33,6 +61,9 @@ docs = [
     "mkdocstrings[python]",
     "pymdown-extensions",
 ]
+
+[tool.setuptools.packages.find]
+include = ["mcmckit*"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
