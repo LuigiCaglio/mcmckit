@@ -29,18 +29,32 @@ x = np.zeros(2)                       # current position
 logp = log_post(x)                    # its log posterior
 cov = np.eye(2) * 0.5                 # proposal covariance
 
-chain = np.zeros((10_000, 2))
+chain = []                            # a list, so the run can be any length
+n_accepted = 0
+
 for i in range(10_000):
     x, logp, accepted = mh_step(log_post, x, logp, cov)
-    chain[i] = x
+    chain.append(x)
+    n_accepted += accepted
 
+chain = np.array(chain)               # (n_iterations, n_parameters)
 posterior = chain[1000:]              # burn-in is just a slice
 print(posterior.mean(0), posterior.std(0))
+print(f"acceptance rate: {n_accepted / len(chain):.2f}")
 ```
 
 `mh_step` proposes a move, accepts or rejects it, and hands back the new
 position, its log posterior, and whether the move was taken. Everything else
 in this package is a variation on that.
+
+Because the chain is a plain list you append to, nothing needs to know the
+run length in advance. Break out of the loop whenever your own criterion says
+so, and `np.array` whatever you collected.
+
+The acceptance rate is your tuning signal. This one prints about **0.67**,
+which is too high: the proposal is too small, so the chain accepts nearly
+everything and inches along. Widening `cov` would fix it. Roughly 0.2 to 0.4
+is healthy for a random walk.
 
 Plain MH needs a good `cov`, which you rarely know in advance. RAM learns one
 while sampling; the only change is that its adaptation state `S` is threaded
@@ -53,17 +67,29 @@ x = np.zeros(2)
 logp = log_post(x)
 S = np.linalg.cholesky(np.eye(2) * 0.1**2)   # a rough guess is fine
 
-chain = np.zeros((10_000, 2))
+chain = []
+n_accepted = 0
+
 for i in range(1, 10_001):                   # 1-indexed: drives adaptation
     x, logp, S, accepted = ram_step(log_post, x, logp, S, i)
 
-    chain[i - 1] = x
+    chain.append(x)
+    n_accepted += accepted
     if i % 1000 == 0:                        # your convergence check
         print(i, x, logp)
+
+chain = np.array(chain)
+print(f"acceptance rate: {n_accepted / len(chain):.2f}")
 ```
 
-Same shape, one extra threaded value. Drop either into a loop you already
-have.
+Same shape, one extra threaded value. This prints about **0.25**, against RAM's
+0.234 target: starting from a proposal 5x too small, it found a sensible one
+on its own.
+
+A caveat worth knowing early: a *high* acceptance rate is not a good sign. It
+usually means the steps are too small and the chain is crawling. Judge a run
+by effective sample size, not acceptance alone. [Choosing a
+sampler](samplers.md) shows what that looks like.
 
 Everything is a plain module-level function, so import what you use and call
 it bare, or keep the package namespace if you prefer. Both are the same call:

@@ -36,7 +36,7 @@ Every sampler is a plain function that advances the chain by **one step**.
 State goes in as arguments and comes back as return values. Nothing is hidden
 on an object, so the recursion is yours to write, stop, inspect and modify.
 
-### 1. Metropolis-Hastings — the whole idea in six lines
+### 1. Metropolis-Hastings — the whole idea, start to finish
 
 The simplest sampler, with a fixed proposal covariance and no adaptation. If
 you read one example, read this one:
@@ -52,18 +52,32 @@ x = np.zeros(2)                       # current position
 logp = log_post(x)                    # its log posterior
 cov = np.eye(2) * 0.5                 # proposal covariance
 
-chain = np.zeros((10_000, 2))
+chain = []                            # a list, so the run can be any length
+n_accepted = 0
+
 for i in range(10_000):
     x, logp, accepted = mh_step(log_post, x, logp, cov)
-    chain[i] = x
+    chain.append(x)
+    n_accepted += accepted
 
+chain = np.array(chain)               # (n_iterations, n_parameters)
 posterior = chain[1000:]              # burn-in is just a slice
 print(posterior.mean(0), posterior.std(0))
+print(f"acceptance rate: {n_accepted / len(chain):.2f}")
 ```
 
 `mh_step` proposes a move, accepts or rejects it, and hands back the new
 position, its log posterior, and whether the move was taken. That is the
 entire interface. Everything else in this package is a variation on it.
+
+Because the chain is a plain list you append to, nothing needs to know the
+run length in advance. Break out of the loop whenever your own criterion says
+so, and `np.array` whatever you collected.
+
+The acceptance rate is your tuning signal. This one prints about **0.67**,
+which is too high: the proposal is too small, so the chain accepts nearly
+everything and inches along. Widening `cov` would fix it. Roughly 0.2 to 0.4
+is healthy for a random walk.
 
 ### 2. RAM — the same loop, tuning itself
 
@@ -80,18 +94,30 @@ x = np.zeros(2)
 logp = log_post(x)
 S = np.linalg.cholesky(np.eye(2) * 0.1**2)   # a rough guess is fine
 
-chain = np.zeros((10_000, 2))
+chain = []
+n_accepted = 0
+
 for i in range(1, 10_001):                   # 1-indexed: drives adaptation
     x, logp, S, accepted = ram_step(log_post, x, logp, S, i)
 
-    chain[i - 1] = x
+    chain.append(x)
+    n_accepted += accepted
     if i % 1000 == 0:                        # your convergence check, your rules
         print(i, x, logp)
+
+chain = np.array(chain)
+print(f"acceptance rate: {n_accepted / len(chain):.2f}")
 ```
 
-Same shape, one extra threaded value. Drop either into a loop you already
-have. See [Choosing a sampler](https://luigicaglio.github.io/mcmckit/samplers/)
-for when each one is worth using.
+Same shape, one extra threaded value. This prints about **0.25**, against RAM's
+0.234 target: starting from a proposal 5x too small, it found a sensible one
+on its own, which is the whole point of using it.
+
+One caveat worth knowing early: a *high* acceptance rate is not a good sign.
+It usually means the steps are too small and the chain is crawling. Judge a
+run by effective sample size (`result.ess()`), not by acceptance alone. See
+[Choosing a sampler](https://luigicaglio.github.io/mcmckit/samplers/) for
+what that looks like in practice.
 
 Everything is a plain module-level function, so import what you use and call
 it bare, or keep the package namespace if you prefer. Both are the same call:
