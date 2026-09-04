@@ -15,29 +15,55 @@ Every sampler is a plain function that advances the chain by **one step**.
 State goes in as arguments and comes back as return values. Nothing is hidden
 on an object, so the recursion is yours to write, stop, inspect and modify.
 
+Start with the simplest sampler, Metropolis-Hastings, which has a fixed
+proposal and no adaptation state at all:
+
 ```python
 import numpy as np
+from mcmckit import mh_step
+
+def log_post(theta):                  # your model goes here
+    return -0.5 * np.sum(theta**2)    # a standard normal, for illustration
+
+x = np.zeros(2)                       # current position
+logp = log_post(x)                    # its log posterior
+cov = np.eye(2) * 0.5                 # proposal covariance
+
+chain = np.zeros((10_000, 2))
+for i in range(10_000):
+    x, logp, accepted = mh_step(log_post, x, logp, cov)
+    chain[i] = x
+
+posterior = chain[1000:]              # burn-in is just a slice
+print(posterior.mean(0), posterior.std(0))
+```
+
+`mh_step` proposes a move, accepts or rejects it, and hands back the new
+position, its log posterior, and whether the move was taken. Everything else
+in this package is a variation on that.
+
+Plain MH needs a good `cov`, which you rarely know in advance. RAM learns one
+while sampling; the only change is that its adaptation state `S` is threaded
+through too, and it needs the step number:
+
+```python
 from mcmckit import ram_step
 
-def log_post(theta):                          # your model goes here
-    return -0.5 * np.sum(theta**2)
+x = np.zeros(2)
+logp = log_post(x)
+S = np.linalg.cholesky(np.eye(2) * 0.1**2)   # a rough guess is fine
 
-d = 2
-x = np.zeros(d)                               # current position
-logp = log_post(x)                            # its log posterior
-S = np.linalg.cholesky(np.eye(d) * 0.1**2)    # RAM adaptation state
-
-chain = np.zeros((10_000, d))
-for i in range(1, 10_001):
+chain = np.zeros((10_000, 2))
+for i in range(1, 10_001):                   # 1-indexed: drives adaptation
     x, logp, S, accepted = ram_step(log_post, x, logp, S, i)
 
     chain[i - 1] = x
-    if i % 1000 == 0:                         # your convergence check
+    if i % 1000 == 0:                        # your convergence check
         print(i, x, logp)
 ```
 
-`ram_step` proposes, accepts or rejects, adapts the proposal covariance, and
-hands everything back. Drop it into a loop you already have.
+Same shape, one extra threaded value. Drop either into a loop you already
+have.
 
 Everything is a plain module-level function, so import what you use and call
 it bare, or keep the package namespace if you prefer. Both are the same call:
